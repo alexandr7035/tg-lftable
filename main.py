@@ -10,9 +10,11 @@ from datetime import datetime
 import pytz
 import os
 
+
+# If there's no 'tokens' directory.
 if not os.path.exists('tokens/'):
-	print("You should create 'tokens/' dir and put 'token.dev' or 'token.release' file there. Exit")
-	exit()
+    print("You should create 'tokens/' dir and put 'token.dev' or 'token.release' file there. Exit")
+    exit()
 
 
 ############################# Timetables #########################################
@@ -113,9 +115,17 @@ def main_menu_keyboard():
     return(InlineKeyboardMarkup(keyboard))
 
 
-# Menu for specific timetable. One button returns to main menu 
+# Menu for specific timetable. One button returns to main menu, one refreshes date and time info.
 def answer_keyboard():
-    keyboard = [[InlineKeyboardButton('Назад в меню', callback_data='main_menu')]]
+    
+    # Button to refresh current answer menu (so you don't have to come back to main menu).
+    refresh_button = InlineKeyboardButton('🔄 Обновить   ', callback_data='refresh')
+    # Returns to menu.
+    back_button = InlineKeyboardButton('⬅️ Назад в меню', callback_data='main_menu')
+
+    keyboard = [[refresh_button],
+				  [back_button]]
+				  
     return(InlineKeyboardMarkup(keyboard))
 
 
@@ -163,7 +173,7 @@ def answer_message():
 
     answer_text += '<b>СКАЧАТЬ</b>: ' + current_ttb.url
     
-	# Return this text
+    # Return this text
     return(answer_text)
     
 
@@ -174,10 +184,10 @@ token_to_use = 'token.dev'
 #token_to_use = 'token.release'
 
 try:
-	token_file = open('tokens/' + token_to_use) 
+    token_file = open('tokens/' + token_to_use) 
 except Exception:
-	print("No token file \'" + token_to_use + "\'. You should put it into 'tokens/' dir. Exit.")
-	exit()
+    print("No token file \'" + token_to_use + "\'. You should put it into 'tokens/' dir. Exit.")
+    exit()
 
 
 # Read token
