@@ -58,7 +58,7 @@ def start(bot, update):
                            reply_markup=main_menu_keyboard())
 
 
-def menu_actions(bot, update):
+def button_actions(bot, update):
     query = update.callback_query
     
     global current_callback
@@ -213,7 +213,7 @@ dp = updater.dispatcher
 
 # Handlers
 dp.add_handler(CommandHandler('start', start))
-dp.add_handler(CallbackQueryHandler(menu_actions))
+dp.add_handler(CallbackQueryHandler(button_actions))
 
 
 
