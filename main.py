@@ -67,7 +67,7 @@ def menu_actions(bot, update):
     print('Button pressed: ', current_callback)
     
     # Calls main menu.
-    if query.data == 'main_menu':
+    if current_callback == 'main_menu':
 
         bot.edit_message_text(chat_id = query.message.chat_id,
             message_id = query.message.message_id,
@@ -78,7 +78,7 @@ def menu_actions(bot, update):
 
     
     # Calls answer with certain timetable depending on the button pressed before.
-    if query.data in  ['answer_p1', 'answer_p2', 'answer_p3', 'answer_p4', 'refresh']:
+    if current_callback in  ['answer_p1', 'answer_p2', 'answer_p3', 'answer_p4', 'refresh']:
 
         bot.edit_message_text(chat_id=query.message.chat_id,
                         message_id=query.message.message_id,
@@ -87,8 +87,9 @@ def menu_actions(bot, update):
                         parse_mode=ParseMode.HTML,
                         reply_markup=answer_keyboard())
     
-
-
+    if current_callback == 'notify':
+        pass
+    
 
 ############################# Messages #########################################
 
@@ -175,10 +176,13 @@ def answer_keyboard():
     
     # Button to refresh current answer menu (so you don't have to come back to main menu).
     refresh_button = InlineKeyboardButton('🔄 Обновить   ', callback_data='refresh')
+    # For ttb_checker.py. Adds info to DB.
+    notify_button = InlineKeyboardButton('🛎 Уведомлять', callback_data='notify')
     # Sends you back to the main menu.
     back_button = InlineKeyboardButton('⬅️ Назад в меню', callback_data='main_menu')
 
     keyboard = [[refresh_button],
+                [notify_button],
                   [back_button]]
                   
     return(InlineKeyboardMarkup(keyboard))
