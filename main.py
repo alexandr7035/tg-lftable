@@ -9,6 +9,26 @@ from datetime import datetime
 
 import pytz
 import os
+import sys
+
+import logging
+import sys
+
+import random
+
+# Logging settings. Log all exceptions.
+logging.basicConfig(filename="lftable.log", level=logging.INFO)
+logger = logging.getLogger('mylogger')
+
+# Install exception handler
+def my_handler(type, value, tb):
+    logger.exception("Uncaught exception: {0}".format(str(value)))
+sys.excepthook = my_handler
+
+
+
+
+
 
 # See common_data.py to understant how it works.
 from common_data import *
@@ -65,7 +85,7 @@ def button_actions(bot, update):
     current_callback = query.data
     
     print('Button pressed: ', current_callback)
-    
+
     # Calls main menu.
     if current_callback == 'main_menu':
 
@@ -99,9 +119,12 @@ def main_menu_message():
     menu_text = '<b>LFTable</b>: работа с расписанием занятий юридического факультета БГУ.\n\n'
     
     menu_text += 'Источник: https://law.bsu.by\n'
-    menu_text += 'Информация об авторских правах юрфака: https://law.bsu.by/avtorskie-prava.html\n\n'
+    menu_text += 'Информация об авторских правах юрфака: https://law.bsu.by/avtorskie-prava.html\n'
+    # To fix badrequest error.
+    menu_text += 'Страница обновлена: ' + datetime.now().strftime("%d.%m.%Y %H:%M:%S") + '\n\n'
   
     menu_text += 'Выберите нужное расписание:'
+
     return(menu_text)
 
 
@@ -138,8 +161,12 @@ def answer_message():
     answer_text += 'Дата обновления: ' + update_date + '\n'
     answer_text += 'Время обновления: '+ update_time + '\n\n'
 
-    answer_text += '<b>СКАЧАТЬ</b>: ' + current_ttb.url
+    answer_text += '<b>СКАЧАТЬ</b>: ' + current_ttb.url + "\n\n"
     
+    # To fix badrequest error.
+    answer_text += '-------------------\n'
+    answer_text += 'Страница обновлена: ' + datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+
 
     
     # For 'refresh' function.
