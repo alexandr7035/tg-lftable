@@ -4,3 +4,4 @@ tokens
 *.pyo
 __pycache__
 *.log
+db
