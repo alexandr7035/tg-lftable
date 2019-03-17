@@ -12,9 +12,10 @@ import os
 import sys
 
 import logging
-import sys
+import sqlite3
 
-import random
+# See common_data.py to understant how it works.
+from common_data import *
 
 # Logging settings. Log all exceptions.
 logging.basicConfig(filename="lftable.log", level=logging.INFO)
@@ -26,12 +27,10 @@ def my_handler(type, value, tb):
 sys.excepthook = my_handler
 
 
+users_db = 'db/notify_users.db'
 
 
 
-
-# See common_data.py to understant how it works.
-from common_data import *
 
 # If there's no 'tokens' directory.
 if not os.path.exists('tokens/'):
@@ -40,8 +39,10 @@ if not os.path.exists('tokens/'):
 
 
 # Used for refresh function
-global old_ttb
-
+old_ttb = None
+# Used for notify function
+notify_status = None
+current_ttb = None
 
 ############################# Timetables #########################################
 
@@ -51,7 +52,7 @@ global old_ttb
 # Get timetable's mtime using urllib module. 
 def ttb_gettime(ttb):
     
-    response =  urllib.request.urlopen(ttb.url)
+    response =  urllib.request.urlopen(ttb.url, timeout=25)
     
     # Get date from HTTP header.
     native_date = ' '.join(dict(response.headers)['Last-Modified'].rsplit()[1:-1])
@@ -68,6 +69,37 @@ def ttb_gettime(ttb):
     return(date)
                                                 
 
+# Checks if user is notified when timetable is updated.
+# Used to set text on the "notify" button.
+def check_user_notified(ttb, user_id):
+    
+    # Connect to users db.
+    conn = sqlite3.connect(users_db)
+    cursor = conn.cursor()
+        
+    cursor.execute('SELECT users FROM ' + ttb.shortname)
+    result = cursor.fetchall()
+        
+    conn.close()
+    
+    # List for users notifed about current ttb updates.
+    users_to_notify = []
+    for i in result:
+       users_to_notify.append(i[0])
+        
+    print(users_to_notify)
+         
+        
+    if str(user_id) in users_to_notify:
+           print('You are in notify list. Disable')
+           #notify_status = True
+           return True
+    else:
+           print('You are not in notify list. Enable') 
+           #notify_status = False
+           return False
+           
+    #print(notify_status)
 
 
 ############################### Bot ############################################
@@ -75,14 +107,20 @@ def ttb_gettime(ttb):
 # /start command --> calls main menu.
 def start(bot, update):
     update.message.reply_text(main_menu_message(), parse_mode=ParseMode.HTML,
-                           reply_markup=main_menu_keyboard())
+                           reply_markup=main_menu_keyboard(), timeout=25)
 
 
 def button_actions(bot, update):
     query = update.callback_query
     
     global current_callback
+    global cid
+    
+    
+    # To know which button was pressed.
     current_callback = query.data
+    # To know chat id for notify action.
+    cid = query.message.chat_id
     
     print('Button pressed: ', current_callback)
 
@@ -90,25 +128,23 @@ def button_actions(bot, update):
     if current_callback == 'main_menu':
 
         bot.edit_message_text(chat_id = query.message.chat_id,
-            message_id = query.message.message_id,
-            text=main_menu_message(),
-            # Used for bold font
-            parse_mode=ParseMode.HTML,
-            reply_markup=main_menu_keyboard())
-
+                                message_id = query.message.message_id,
+                                text=main_menu_message(),
+                                # Used for bold font
+                                parse_mode=ParseMode.HTML,
+                                reply_markup=main_menu_keyboard(), timeout=25)
+                                
     
     # Calls answer with certain timetable depending on the button pressed before.
-    if current_callback in  ['answer_p1', 'answer_p2', 'answer_p3', 'answer_p4', 'refresh']:
+    if current_callback in  ['answer_p1', 'answer_p2', 'answer_p3', 'answer_p4', 'refresh', 'notify']:
 
         bot.edit_message_text(chat_id=query.message.chat_id,
                         message_id=query.message.message_id,
                         text=answer_message(),
                         # Used for bold font
                         parse_mode=ParseMode.HTML,
-                        reply_markup=answer_keyboard())
+                        reply_markup=answer_keyboard(), timeout=25)
     
-    if current_callback == 'notify':
-        pass
     
 
 ############################# Messages #########################################
@@ -120,6 +156,7 @@ def main_menu_message():
     
     menu_text += 'Источник: https://law.bsu.by\n'
     menu_text += 'Информация об авторских правах юрфака: https://law.bsu.by/avtorskie-prava.html\n'
+    
     # To fix badrequest error.
     menu_text += 'Страница обновлена: ' + datetime.now().strftime("%d.%m.%Y %H:%M:%S") + '\n\n'
   
@@ -134,6 +171,10 @@ def answer_message():
     # Used for refresh function
     global old_ttb
     
+    # Used for notify function
+    global cid
+    global current_ttb
+    
     if current_callback == 'answer_p1':
         current_ttb = pravo_c1
     elif current_callback == 'answer_p2':
@@ -144,6 +185,34 @@ def answer_message():
         current_ttb = pravo_c4
     elif current_callback == 'refresh':
         current_ttb = old_ttb
+    
+    # If "notify" button is pressed.
+    elif current_callback == 'notify':
+        current_ttb = old_ttb
+        
+        # Disable if user id is already in the db. Delete row from db.
+        if check_user_notified(current_ttb, cid):
+            conn = sqlite3.connect(users_db)
+            cursor = conn.cursor()
+        
+            cursor.execute('DELETE FROM ' + current_ttb.shortname + ' WHERE (users = \'' + str(cid) + '\')') #304687124');
+            result = cursor.fetchall()
+            
+            # Save changes and close.
+            conn.commit()
+            conn.close()
+         
+        # Enable notifying. Insert user id into db.
+        else:
+            conn = sqlite3.connect(users_db)
+            cursor = conn.cursor()
+        
+            cursor.execute('INSERT INTO ' + current_ttb.shortname + ' VALUES (\'' + str(cid) + '\')')
+            result = cursor.fetchall()
+            
+            # Save changesa and close.
+            conn.commit()
+            conn.close()
     
         
     # Get the timetable's "mtime"
@@ -166,8 +235,6 @@ def answer_message():
     # To fix badrequest error.
     answer_text += '-------------------\n'
     answer_text += 'Страница обновлена: ' + datetime.now().strftime("%d.%m.%Y %H:%M:%S")
-
-
     
     # For 'refresh' function.
     old_ttb = current_ttb
@@ -198,14 +265,27 @@ def main_menu_keyboard():
     return(InlineKeyboardMarkup(keyboard))
 
 
+
 # Menu for specific timetable. One button returns to main menu, one refreshes date and time info.
 def answer_keyboard():
     
+	# Used for notify button.
+    global current_ttb
+    
     # Button to refresh current answer menu (so you don't have to come back to main menu).
     refresh_button = InlineKeyboardButton('🔄 Обновить   ', callback_data='refresh')
-    # For ttb_checker.py. Adds info to DB.
-    notify_button = InlineKeyboardButton('🛎 Уведомлять', callback_data='notify')
-    # Sends you back to the main menu.
+    
+    # For notify function. Adds info to DB.
+    if check_user_notified(current_ttb, cid):
+        notify_text = '❌ Не уведомлять'
+    else:
+        notify_text = '🛎 Уведомлять'
+    
+    # Button to put user id into db in order to notify him when the timetable is updated. 
+    notify_button = InlineKeyboardButton(notify_text, callback_data='notify')
+    
+ 
+    # Sends user back to the main menu.
     back_button = InlineKeyboardButton('⬅️ Назад в меню', callback_data='main_menu')
 
     keyboard = [[refresh_button],
