@@ -16,8 +16,9 @@ import sqlite3
 
 import time
 
-# See common_data.py to understant how it works.
-from common_data import *
+# See static.py to understant how it works.
+# This file contains TTBS objects, their attributes, paths to databases and token files. 
+from static import *
 
 # Logging settings. Log all exceptions.
 logging.basicConfig(filename="lftable.log", level=logging.INFO)
@@ -27,10 +28,6 @@ logger = logging.getLogger('mylogger')
 def my_handler(type, value, tb):
     logger.exception("Uncaught exception: {0}".format(str(value)))
 sys.excepthook = my_handler
-
-
-users_db = 'db/notify_users.db'
-times_db = 'db/times.db'
 
 
 
@@ -148,10 +145,9 @@ def button_actions(bot, update):
                         reply_markup=answer_keyboard(), timeout=25)
         print(query.message.message_id)
     
-    # Deletes notification message.
     
+    # Deletes notification message.
     if current_callback == 'delete_notification':
-        print(query.message.message_id)
         bot.delete_message(cid, query.message.message_id)
 
 ############################# Messages #########################################
@@ -319,8 +315,8 @@ def notify_keyboard():
 # Send message.
 def callback_minute(bot, job):
     
-    conn = sqlite3.connect(times_db)
-    cursor = conn.cursor()
+    conn_times_db = sqlite3.connect(times_db)
+    cursor_times_db = conn_times_db.cursor()
     
     for checking_ttb in [pravo_c1, pravo_c2, pravo_c3, pravo_c4]:
         
@@ -331,8 +327,8 @@ def callback_minute(bot, job):
        
         
         # Get old update time from db.
-        cursor.execute("SELECT time  FROM times WHERE (ttb = ?)", (checking_ttb.shortname,));
-        result = cursor.fetchall()
+        cursor_times_db.execute("SELECT time  FROM times WHERE (ttb = ?)", (checking_ttb.shortname,));
+        result = cursor_times_db.fetchall()
         old_update_time = result[0][0]
         
         del(result)
@@ -346,6 +342,9 @@ def callback_minute(bot, job):
         
         print('old update time: ', old_update_time)
         
+        
+        # If the timetable was updated, sends it to all users 
+        #+ from certain table in 'users.db'
         if dt_update_time > dt_old_update_time:
             print('TTB WAS UPDATED')
             
@@ -374,28 +373,19 @@ def callback_minute(bot, job):
             
             for user_id in users_to_notify:
                 bot.send_message(chat_id=user_id, text=notification_text, reply_markup=notify_keyboard(), parse_mode=ParseMode.HTML)
-                time.sleep(1)
+                time.sleep(3)
                 
 
                 
         else:
             print('TTB IS FRESH')
             pass
-            
+        
+        
         time.sleep(1)
     
-    """
-        if True:
-
-
-   # answer_text 
-        
-        bot.send_message(chat_id=304687124, text=notification_text, reply_markup=notify_keyboard())
-        print("Message sent")
-
-    """
-    
-    conn.close()
+    # Close 'users.db' until next check.
+    conn_times_db.close()
 
 
 ############################# Bot settings #########################################
