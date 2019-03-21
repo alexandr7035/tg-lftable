@@ -98,7 +98,6 @@ def check_user_notified(ttb, user_id):
            #notify_status = False
            return False
            
-    #print(notify_status)
 
 
 ############################### Bot ############################################
@@ -330,15 +329,12 @@ def callback_minute(bot, job):
         cursor_times_db.execute("SELECT time  FROM times WHERE (ttb = ?)", (checking_ttb.shortname,));
         result = cursor_times_db.fetchall()
         old_update_time = result[0][0]
-        
         del(result)
         
-        # String dates to datetime objects
         
+        # String dates to datetime objects
         dt_update_time = datetime.strptime(update_time, '%d.%m.%Y %H:%M:%S')
         dt_old_update_time = datetime.strptime(old_update_time, '%d.%m.%Y %H:%M:%S')
-        
-        print(dt_update_time, dt_old_update_time)
         
         print('old update time: ', old_update_time)
         
@@ -348,8 +344,8 @@ def callback_minute(bot, job):
         if dt_update_time > dt_old_update_time:
             print('TTB WAS UPDATED')
             
-            #notification_text = 'Появилось расписание \<b>"' + checking_ttb.name + '\" </b>\n'
-            notification_text = 'Дата обновления: ' + dt_update_time.strftime('%d.%m.%Y') + '\n'
+            notification_text = 'Появилось расписание <b>"' + checking_ttb.name + '". </b>\n'
+            notification_text += 'Дата обновления: ' + dt_update_time.strftime('%d.%m.%Y') + '\n'
             notification_text += 'Время обновления: '+ dt_update_time.strftime('%H:%M') + '\n\n' 
             notification_text += '<b>Скачать</b>: ' + checking_ttb.url + "\n\n"
             
@@ -362,29 +358,27 @@ def callback_minute(bot, job):
 
             conn_users_db.close()
     
-            # List for users notifed about current ttb updates.
+            # List for users notifed about current timetable updates.
             users_to_notify = []
             for i in result:
                 users_to_notify.append(i[0])
-            
             del(result)
             
             print(users_to_notify)
             
+            # Send notifications to users.
             for user_id in users_to_notify:
                 bot.send_message(chat_id=user_id, text=notification_text, reply_markup=notify_keyboard(), parse_mode=ParseMode.HTML)
                 time.sleep(3)
                 
-
-                
-        else:
-            print('TTB IS FRESH')
-            pass
-        
-        
+            
+            # Writing new update time to the database.
+            cursor_times_db.execute("UPDATE times SET time = '" + update_time + "' WHERE (ttb = ?)", (checking_ttb.shortname,));
+            conn_times_db.commit()
+            
         time.sleep(1)
     
-    # Close 'users.db' until next check.
+    # Close 'times.db' until next check.
     conn_times_db.close()
 
 
