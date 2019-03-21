@@ -411,7 +411,7 @@ job = updater.job_queue
 
 dp = updater.dispatcher
 
-job.run_repeating(callback_minute, interval=120, first=0)
+job.run_repeating(callback_minute, interval = check_updates_interval, first=0)
 
 
 # Handlers

@@ -2,6 +2,8 @@
 users_db = 'db/notify_users.db'
 times_db = 'db/times.db'
 
+# Interval for update checks (s).
+check_updates_interval = 120
 
 # Class for storing timetable's options.
 class TTBS():
