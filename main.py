@@ -1,6 +1,6 @@
-#!./lftable-venv/bin/python3
+#!./lftable-venv/bin/python3 -B
 from telegram.ext import Updater
-from telegram.ext import CommandHandler, CallbackQueryHandler
+from telegram.ext import CommandHandler, CallbackQueryHandler, JobQueue
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram import ParseMode
 
@@ -13,6 +13,8 @@ import sys
 
 import logging
 import sqlite3
+
+import time
 
 # See common_data.py to understant how it works.
 from common_data import *
@@ -28,7 +30,7 @@ sys.excepthook = my_handler
 
 
 users_db = 'db/notify_users.db'
-
+times_db = 'db/times.db'
 
 
 
@@ -144,8 +146,13 @@ def button_actions(bot, update):
                         # Used for bold font
                         parse_mode=ParseMode.HTML,
                         reply_markup=answer_keyboard(), timeout=25)
+        print(query.message.message_id)
     
+    # Deletes notification message.
     
+    if current_callback == 'delete_notification':
+        print(query.message.message_id)
+        bot.delete_message(cid, query.message.message_id)
 
 ############################# Messages #########################################
 
@@ -269,7 +276,7 @@ def main_menu_keyboard():
 # Menu for specific timetable. One button returns to main menu, one refreshes date and time info.
 def answer_keyboard():
     
-	# Used for notify button.
+    # Used for notify button.
     global current_ttb
     
     # Button to refresh current answer menu (so you don't have to come back to main menu).
@@ -296,6 +303,101 @@ def answer_keyboard():
 
 
 
+############################# Notify part #########################################
+
+
+# Keyboard for the message.
+def notify_keyboard():
+    
+    del_notification_button = InlineKeyboardButton('Скрыть',  callback_data='delete_notification')
+    
+    keyboard = [[del_notification_button]]
+    
+    return(InlineKeyboardMarkup(keyboard))
+
+
+# Send message.
+def callback_minute(bot, job):
+    
+    conn = sqlite3.connect(times_db)
+    cursor = conn.cursor()
+    
+    for checking_ttb in [pravo_c1, pravo_c2, pravo_c3, pravo_c4]:
+        
+        # Get ttb update time from law.bsu.by
+        update_time = ttb_gettime(checking_ttb).strftime('%d.%m.%Y %H:%M:%S')
+        
+        print(checking_ttb.shortname, 'updated at: ', update_time)
+       
+        
+        # Get old update time from db.
+        cursor.execute("SELECT time  FROM times WHERE (ttb = ?)", (checking_ttb.shortname,));
+        result = cursor.fetchall()
+        old_update_time = result[0][0]
+        
+        del(result)
+        
+        # String dates to datetime objects
+        
+        dt_update_time = datetime.strptime(update_time, '%d.%m.%Y %H:%M:%S')
+        dt_old_update_time = datetime.strptime(old_update_time, '%d.%m.%Y %H:%M:%S')
+        
+        print(dt_update_time, dt_old_update_time)
+        
+        print('old update time: ', old_update_time)
+        
+        if dt_update_time > dt_old_update_time:
+            print('TTB WAS UPDATED')
+            
+            #notification_text = 'Появилось расписание \<b>"' + checking_ttb.name + '\" </b>\n'
+            notification_text = 'Дата обновления: ' + dt_update_time.strftime('%d.%m.%Y') + '\n'
+            notification_text += 'Время обновления: '+ dt_update_time.strftime('%H:%M') + '\n\n' 
+            notification_text += '<b>Скачать</b>: ' + checking_ttb.url + "\n\n"
+            
+            # Connect to users db.
+            conn_users_db = sqlite3.connect(users_db)
+            cursor_users_db = conn_users_db.cursor()
+        
+            cursor_users_db.execute('SELECT users FROM ' + checking_ttb.shortname)
+            result = cursor_users_db.fetchall()
+
+            conn_users_db.close()
+    
+            # List for users notifed about current ttb updates.
+            users_to_notify = []
+            for i in result:
+                users_to_notify.append(i[0])
+            
+            del(result)
+            
+            print(users_to_notify)
+            
+            for user_id in users_to_notify:
+                bot.send_message(chat_id=user_id, text=notification_text, reply_markup=notify_keyboard(), parse_mode=ParseMode.HTML)
+                time.sleep(1)
+                
+
+                
+        else:
+            print('TTB IS FRESH')
+            pass
+            
+        time.sleep(1)
+    
+    """
+        if True:
+
+
+   # answer_text 
+        
+        bot.send_message(chat_id=304687124, text=notification_text, reply_markup=notify_keyboard())
+        print("Message sent")
+
+    """
+    
+    conn.close()
+
+
 ############################# Bot settings #########################################
 
 # Use dev token
@@ -309,18 +411,33 @@ except Exception:
     exit()
 
 
+    
+
+        
 # Read token
 token_str = token_file.readline()[:-1] 
 token_file.close()
 
 updater = Updater(token_str)
 
+
+bot = updater.bot
+job = updater.job_queue
+
+
 dp = updater.dispatcher
+
+job.run_repeating(callback_minute, interval=120, first=0)
 
 
 # Handlers
 dp.add_handler(CommandHandler('start', start))
 dp.add_handler(CallbackQueryHandler(button_actions))
+
+
+
+
+
 
 
 
