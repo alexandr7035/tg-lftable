@@ -1,6 +1,11 @@
 # Databases.
-users_db = 'db/notify_users.db'
-times_db = 'db/times.db'
+db_dir = 'db/'
+users_db = db_dir + 'notify_users.db'
+times_db = db_dir + 'times.db'
+
+# Directory for the 'token.release' and 'token.dev' files
+tokens_dir = 'tokens/'
+
 
 # Interval for update checks (s).
 check_updates_interval = 120
