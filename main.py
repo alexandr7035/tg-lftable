@@ -20,6 +20,7 @@ import time
 # This file contains TTBS objects, their attributes, paths to databases and token files. 
 from static import *
 
+
 # Logging settings. Log all exceptions.
 logging.basicConfig(filename="lftable.log", level=logging.INFO)
 logger = logging.getLogger('mylogger')
@@ -42,6 +43,71 @@ old_ttb = None
 # Used for notify function
 notify_status = None
 current_ttb = None
+
+
+# Create necessary project dirs and files.
+# (See 'static.py' for values of the variables)
+def first_run_check():
+    
+    try:
+        os.mkdir(db_dir)
+    except Exception:
+        pass
+        
+    try:
+        os.mkdir(tokens_dir)
+    except Exception:
+        pass  
+    
+ 
+    if not os.path.exists(users_db):
+        conn = sqlite3.connect(users_db)
+        cursor = conn.cursor()
+        
+        
+        for table_name in ['pravo_c1', 'pravo_c2', 'pravo_c3', 'pravo_c4']:
+            cursor.execute('CREATE TABLE ' + table_name + ' (users)')
+            
+        conn.commit()
+        conn.close()
+        
+    
+    if not os.path.exists(times_db):
+        
+        conn = sqlite3.connect(times_db)
+        cursor = conn.cursor()
+        
+        cursor.execute('CREATE TABLE times (ttb, time)')
+        conn.commit()
+        
+        for ttb in ['pravo_c1', 'pravo_c2', 'pravo_c3', 'pravo_c4']:
+            cursor.execute('INSERT INTO times VALUES ("' + ttb + '", "")')
+        
+        conn.commit()
+        conn.close()
+        
+# Sets times to the 'times.db' immediately after the run WITHOUT notifiying users 
+# Prevents late notifications if the program was down for a long time.
+def db_set_times_after_run():
+    conn = sqlite3.connect(times_db)
+    cursor = conn.cursor()
+    
+    for ttb in [pravo_c1, pravo_c2, pravo_c3, pravo_c4]:
+        
+        update_time = datetime.now().strftime('%d.%m.%Y %H:%M:%S')
+        print(update_time)
+        
+        cursor.execute("UPDATE times SET time = '" + update_time + "' WHERE (ttb = ?)", (ttb.shortname,));
+        
+    conn.commit()
+    conn.close()
+
+
+db_set_times_after_run()
+first_run_check()
+
+
+
 
 ############################# Timetables #########################################
 
@@ -114,7 +180,6 @@ def button_actions(bot, update):
     global current_callback
     global cid
     
-    
     # To know which button was pressed.
     current_callback = query.data
     # To know chat id for notify action.
@@ -148,6 +213,7 @@ def button_actions(bot, update):
     # Deletes notification message.
     if current_callback == 'delete_notification':
         bot.delete_message(cid, query.message.message_id)
+
 
 ############################# Messages #########################################
 
@@ -364,7 +430,7 @@ def callback_minute(bot, job):
                 users_to_notify.append(i[0])
             del(result)
             
-            print(users_to_notify)
+            
             
             # Send notifications to users.
             for user_id in users_to_notify:
@@ -376,7 +442,7 @@ def callback_minute(bot, job):
             cursor_times_db.execute("UPDATE times SET time = '" + update_time + "' WHERE (ttb = ?)", (checking_ttb.shortname,));
             conn_times_db.commit()
             
-        time.sleep(1)
+        time.sleep(3)
     
     # Close 'times.db' until next check.
     conn_times_db.close()
@@ -395,34 +461,22 @@ except Exception:
     exit()
 
 
-    
-
         
 # Read token
 token_str = token_file.readline()[:-1] 
 token_file.close()
 
 updater = Updater(token_str)
-
-
-bot = updater.bot
-job = updater.job_queue
-
-
 dp = updater.dispatcher
 
+# Run ttb checks on on schedule (see check_updates_interval in 'static.py'
+job = updater.job_queue
 job.run_repeating(callback_minute, interval = check_updates_interval, first=0)
 
 
 # Handlers
 dp.add_handler(CommandHandler('start', start))
 dp.add_handler(CallbackQueryHandler(button_actions))
-
-
-
-
-
-
 
 
 # Checking for updates.
