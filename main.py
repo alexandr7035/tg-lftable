@@ -86,6 +86,7 @@ def first_run_check():
         conn.commit()
         conn.close()
         
+        
 # Sets times to the 'times.db' immediately after the run WITHOUT notifiying users 
 # Prevents late notifications if the program was down for a long time.
 def db_set_times_after_run():
@@ -226,7 +227,7 @@ def main_menu_message():
     menu_text += 'Информация об авторских правах юрфака: https://law.bsu.by/avtorskie-prava.html\n'
     
     # To fix badrequest error.
-    menu_text += 'Страница обновлена: ' + datetime.now().strftime("%d.%m.%Y %H:%M:%S") + '\n\n'
+    menu_text += 'Страница обновлена: ' + datetime.now().strftime("%d-%m-%Y %H:%M:%S") + '\n\n'
   
     menu_text += 'Выберите нужное расписание:'
 
@@ -302,7 +303,7 @@ def answer_message():
     
     # To fix badrequest error.
     answer_text += '-------------------\n'
-    answer_text += 'Страница обновлена: ' + datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+    answer_text += 'Страница обновлена: ' + datetime.now().strftime("%d-%m-%Y %H:%M:%S")
     
     # For 'refresh' function.
     old_ttb = current_ttb
