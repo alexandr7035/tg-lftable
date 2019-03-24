@@ -24,11 +24,11 @@ from static import *
 """
 # Logging settings. Log all exceptions.
 logging.basicConfig(filename="lftable.log", level=logging.INFO)
-logger = logging.getLogger('mylogger')
+logger_ex = logging.getLogger('mylogger')
 
 # Install exception handler
 def my_handler(type, value, tb):
-    logger.exception("Uncaught exception: {0}".format(str(value)))
+    logger_ex.exception("Uncaught exception: {0}".format(str(value)))
 sys.excepthook = my_handler
 
 """
@@ -44,6 +44,8 @@ filehandler = logging.FileHandler(filename=logging_filename)
 filehandler.setFormatter(logging.Formatter('%(filename)s [LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s'))
 logger.addHandler(filehandler)
 
+# Write 'program started' message to log
+logger.info("the program was STARTED now")
 
 # Used for refresh function
 old_ttb = None
@@ -108,6 +110,44 @@ def first_run_check():
         
         conn.commit()
         conn.close()
+    
+    if not os.path.exists(statistics_db):
+        conn = sqlite3.connect(statistics_db)
+        
+        # Write to log
+        logger.info("'" + statistics_db + "' database was created")
+        
+        cursor = conn.cursor()
+        
+        cursor.execute('CREATE TABLE uniq_users (users)')
+        
+        conn.commit()
+        conn.close()
+
+
+# Writes uniq user ids to 'statistics.db'
+def send_statistics(user_id):
+    conn = sqlite3.connect(statistics_db)
+    cursor = conn.cursor()
+        
+    cursor.execute('SELECT * FROM uniq_users')
+    result = cursor.fetchall()
+
+    # List of user_ids in the db
+    uniq_users = []
+    for i in result:
+        uniq_users.append(i[0])
+    
+    # Add new user to the db
+    if user_id not in uniq_users:
+        cursor.execute('INSERT INTO uniq_users VALUES (?)', (user_id,))
+        
+    conn.commit()
+    conn.close()
+    
+    # Write to log
+    logger.info("a new user "  + str(user_id) + " added to 'statistics.db'")
+
         
         
 # Sets times to the 'times.db' immediately after the run WITHOUT notifiying users 
@@ -127,6 +167,7 @@ def db_set_times_after_run():
 
 first_run_check()
 db_set_times_after_run()
+
 
 
 
@@ -175,14 +216,10 @@ def check_user_notified(ttb, user_id):
     for i in result:
        users_to_notify.append(i[0])
         
-         
         
     if str(user_id) in users_to_notify:
-           #notify_status = True
            return True
     else:
-
-           #notify_status = False
            return False
            
 
@@ -199,13 +236,20 @@ def start(bot, update):
 def button_actions(bot, update):
     query = update.callback_query
     
+    # The button pressed.
     global current_callback
+    # The user who pressed the button
     global cid
+    
     
     # To know which button was pressed.
     current_callback = query.data
     # To know chat id for notify action.
     cid = query.message.chat_id
+    
+    # If a new user joins the bot, this function writes his id to the 'statistics.db'
+    send_statistics(cid)
+    
     
     #print('Button pressed: ', current_callback)
     # Write to log
