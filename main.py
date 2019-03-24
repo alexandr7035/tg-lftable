@@ -21,19 +21,36 @@ import time
 from static import *
 
 
+# Global variables
+# Used for refresh function
+old_ttb = None
+# Used for notify function
+notify_status = None
+current_ttb = None
+
+
+######################## Logging settings ##############################
+
+if not os.path.exists('log/'):
+    try:
+        os.mkdir('log/')
+    except Exception:
+        print("CRITICAL ERROR: can't create 'log/' directory. Exit")
+        sys.exit()
+
+# Uncomment this and see 'log/lftable-exceptions.log' if something goes wrong.
 """
-# Logging settings. Log all exceptions.
-logging.basicConfig(filename="lftable.log", level=logging.INFO)
-logger_ex = logging.getLogger('mylogger')
+# Logger for all exceptions.
+logging.basicConfig(filename=log_dir + "lftable-exceptions.log", level=logging.DEBUG)
+exception_logger = logging.getLogger('exception_logger')
 
 # Install exception handler
 def my_handler(type, value, tb):
-    logger_ex.exception("Uncaught exception: {0}".format(str(value)))
+    exception_logger.exception("Uncaught exception: {0}".format(str(value)))
 sys.excepthook = my_handler
-
 """
 
-# Logging settings.
+# A simple logger
 #logging_filename = log_dir + 'lftable-' + datetime.now().strftime('%Y%m%d-%H%M%S') + '.log'
 logging_filename = log_dir + 'lftable.log'
 
@@ -47,11 +64,8 @@ logger.addHandler(filehandler)
 # Write 'program started' message to log
 logger.info("the program was STARTED now")
 
-# Used for refresh function
-old_ttb = None
-# Used for notify function
-notify_status = None
-current_ttb = None
+
+########################################################################
 
 
 # Create necessary project dirs and files.
@@ -71,20 +85,16 @@ def first_run_check():
         logger.info("'" + tokens_dir + "' directory was created")
     except Exception:
         pass  
-    
-    try:
-        os.mkdir(log_dir)
-    except Exception:
-        pass  
  
+ 
+    # Create database for users notified about timetables' updates.
+    # 4 tables for each timetable, each with 'users' column
     if not os.path.exists(users_db):
         conn = sqlite3.connect(users_db)
+        cursor = conn.cursor()   
         
         # Write to log
         logger.info("'" + users_db + "' database was created")
-        
-        cursor = conn.cursor()
-        
         
         for table_name in ['pravo_c1', 'pravo_c2', 'pravo_c3', 'pravo_c4']:
             cursor.execute('CREATE TABLE ' + table_name + ' (users)')
@@ -92,15 +102,16 @@ def first_run_check():
         conn.commit()
         conn.close()
         
-    
+        
+    # Create database to store the last update time of each timetable
+    # 1 table, 4 rows (1 for each timetable), 2 columns (ttb name and the time of last update)
     if not os.path.exists(times_db):
         
         conn = sqlite3.connect(times_db)
+        cursor = conn.cursor()
         
         # Write to log
         logger.info("'" + times_db + "' database was created")
-        
-        cursor = conn.cursor()
         
         cursor.execute('CREATE TABLE times (ttb, time)')
         conn.commit()
@@ -111,6 +122,8 @@ def first_run_check():
         conn.commit()
         conn.close()
     
+    
+    # Database for statistics.
     if not os.path.exists(statistics_db):
         conn = sqlite3.connect(statistics_db)
         
@@ -141,13 +154,12 @@ def send_statistics(user_id):
     # Add new user to the db
     if user_id not in uniq_users:
         cursor.execute('INSERT INTO uniq_users VALUES (?)', (user_id,))
+        conn.commit()
+        # Write to log
+        logger.info("a new user "  + str(user_id) + " added to 'statistics.db'")
         
-    conn.commit()
     conn.close()
     
-    # Write to log
-    logger.info("a new user "  + str(user_id) + " added to 'statistics.db'")
-
         
         
 # Sets times to the 'times.db' immediately after the run WITHOUT notifiying users 
@@ -164,6 +176,11 @@ def db_set_times_after_run():
         
     conn.commit()
     conn.close()
+
+
+
+
+
 
 first_run_check()
 db_set_times_after_run()
