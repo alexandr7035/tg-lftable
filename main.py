@@ -51,8 +51,8 @@ sys.excepthook = my_handler
 """
 
 # A simple logger
-#logging_filename = log_dir + 'lftable-' + datetime.now().strftime('%Y%m%d-%H%M%S') + '.log'
-logging_filename = log_dir + 'lftable.log'
+logging_filename = log_dir + 'lftable-' + datetime.now().strftime('%Y%m%d-%H%M%S') + '.log'
+#logging_filename = log_dir + 'lftable.log'
 
 logger = logging.getLogger('lftable')
 logger.setLevel(logging.DEBUG)
