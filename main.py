@@ -221,7 +221,7 @@ def button_actions(bot, update):
 # Main menu text
 def main_menu_message():
   
-    menu_text = '<b>LFTable</b>: работа с расписанием занятий юридического факультета БГУ.\n\n'
+    menu_text = '<b>LFTable v' + lftable_version + '</b>: работа с расписанием занятий юридического факультета БГУ.\n\n'
     
     menu_text += 'Источник: https://law.bsu.by\n'
     menu_text += 'Информация об авторских правах юрфака: https://law.bsu.by/avtorskie-prava.html\n'

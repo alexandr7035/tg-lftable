@@ -1,3 +1,6 @@
+# Version number
+lftable_version = '2.0'
+
 # Databases.
 db_dir = 'db/'
 users_db = db_dir + 'notify_users.db'
