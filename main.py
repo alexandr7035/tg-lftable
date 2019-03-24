@@ -34,7 +34,8 @@ sys.excepthook = my_handler
 """
 
 # Logging settings.
-logging_filename = log_dir + 'lftable-' + datetime.now().strftime('%Y%m%d-%H%M%S') + '.log'
+#logging_filename = log_dir + 'lftable-' + datetime.now().strftime('%Y%m%d-%H%M%S') + '.log'
+logging_filename = log_dir + 'lftable.log'
 
 logger = logging.getLogger('lftable')
 logger.setLevel(logging.DEBUG)
@@ -42,13 +43,6 @@ logger.setLevel(logging.DEBUG)
 filehandler = logging.FileHandler(filename=logging_filename)
 filehandler.setFormatter(logging.Formatter('%(filename)s [LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s'))
 logger.addHandler(filehandler)
-
-
-
-# If there's no 'tokens' directory.
-if not os.path.exists('tokens/'):
-    print("You should create 'tokens/' dir and put 'token.dev' or 'token.release' file there. Exit")
-    exit()
 
 
 # Used for refresh function
@@ -64,11 +58,15 @@ def first_run_check():
     
     try:
         os.mkdir(db_dir)
+        # Write to log
+        logger.info("'" + db_dir + "' directory was created")
     except Exception:
         pass
         
     try:
         os.mkdir(tokens_dir)
+        # Write to log
+        logger.info("'" + tokens_dir + "' directory was created")
     except Exception:
         pass  
     
@@ -79,6 +77,10 @@ def first_run_check():
  
     if not os.path.exists(users_db):
         conn = sqlite3.connect(users_db)
+        
+        # Write to log
+        logger.info("'" + users_db + "' database was created")
+        
         cursor = conn.cursor()
         
         
@@ -92,6 +94,10 @@ def first_run_check():
     if not os.path.exists(times_db):
         
         conn = sqlite3.connect(times_db)
+        
+        # Write to log
+        logger.info("'" + times_db + "' database was created")
+        
         cursor = conn.cursor()
         
         cursor.execute('CREATE TABLE times (ttb, time)')
@@ -113,16 +119,15 @@ def db_set_times_after_run():
     for ttb in [pravo_c1, pravo_c2, pravo_c3, pravo_c4]:
         
         update_time = datetime.now().strftime('%d.%m.%Y %H:%M:%S')
-        print(update_time)
         
         cursor.execute("UPDATE times SET time = '" + update_time + "' WHERE (ttb = ?)", (ttb.shortname,));
         
     conn.commit()
     conn.close()
 
-
-db_set_times_after_run()
 first_run_check()
+db_set_times_after_run()
+
 
 
 
@@ -170,15 +175,13 @@ def check_user_notified(ttb, user_id):
     for i in result:
        users_to_notify.append(i[0])
         
-    print(users_to_notify)
          
         
     if str(user_id) in users_to_notify:
-           print('You are in notify list. Disable')
            #notify_status = True
            return True
     else:
-           print('You are not in notify list. Enable') 
+
            #notify_status = False
            return False
            
@@ -191,6 +194,7 @@ def start(bot, update):
     update.message.reply_text(main_menu_message(), parse_mode=ParseMode.HTML,
                            reply_markup=main_menu_keyboard(), timeout=25)
 
+   
 
 def button_actions(bot, update):
     query = update.callback_query
@@ -203,7 +207,10 @@ def button_actions(bot, update):
     # To know chat id for notify action.
     cid = query.message.chat_id
     
-    print('Button pressed: ', current_callback)
+    #print('Button pressed: ', current_callback)
+    # Write to log
+    logger.debug('user ' + str(cid) + " pressed button '" + current_callback + "'")
+    
 
     # Calls main menu.
     if current_callback == 'main_menu':
@@ -225,13 +232,13 @@ def button_actions(bot, update):
                         # Used for bold font
                         parse_mode=ParseMode.HTML,
                         reply_markup=answer_keyboard(), timeout=25)
-        print(query.message.message_id)
     
     
     # Deletes notification message.
     if current_callback == 'delete_notification':
         bot.delete_message(cid, query.message.message_id)
-
+        # Write to log
+        logger.info('user ' + str(cid) + " deleted notification (message: " + str(query.message.message_id) + ")")
 
 ############################# Messages #########################################
 
@@ -281,12 +288,16 @@ def answer_message():
             conn = sqlite3.connect(users_db)
             cursor = conn.cursor()
         
-            cursor.execute('DELETE FROM ' + current_ttb.shortname + ' WHERE (users = \'' + str(cid) + '\')') #304687124');
+            cursor.execute('DELETE FROM ' + current_ttb.shortname + ' WHERE (users = \'' + str(cid) + '\')')
             result = cursor.fetchall()
             
             # Save changes and close.
             conn.commit()
             conn.close()
+            
+            # Write to log
+            logger.info('user ' + str(cid) + " disabled notifications for the'" + current_ttb.shortname + "' timetable")
+            
          
         # Enable notifying. Insert user id into db.
         else:
@@ -299,7 +310,9 @@ def answer_message():
             # Save changesa and close.
             conn.commit()
             conn.close()
-    
+            
+            # Write to log
+            logger.info('user ' + str(cid) + " enabled notifications for the'" + current_ttb.shortname + "' timetable")
         
     # Get the timetable's "mtime"
     ttb_datetime = ttb_gettime(current_ttb)
@@ -406,7 +419,6 @@ def callback_minute(bot, job):
         # Get ttb update time from law.bsu.by
         update_time = ttb_gettime(checking_ttb).strftime('%d.%m.%Y %H:%M:%S')
         
-        print(checking_ttb.shortname, 'updated at: ', update_time)
        
         
         # Get old update time from db.
@@ -420,14 +432,14 @@ def callback_minute(bot, job):
         dt_update_time = datetime.strptime(update_time, '%d.%m.%Y %H:%M:%S')
         dt_old_update_time = datetime.strptime(old_update_time, '%d.%m.%Y %H:%M:%S')
         
-        print('old update time: ', old_update_time)
-        
         
         # If the timetable was updated, sends it to all users 
         #+ from certain table in 'users.db'
         if dt_update_time > dt_old_update_time:
-            print('TTB WAS UPDATED')
             
+            # Write to log
+            logger.info("'" + checking_ttb.shortname + "' timetable was updated at " + update_time)
+
             notification_text = 'Появилось расписание <b>"' + checking_ttb.name + '". </b>\n'
             notification_text += 'Дата обновления: ' + dt_update_time.strftime('%d.%m.%Y') + '\n'
             notification_text += 'Время обновления: '+ dt_update_time.strftime('%H:%M') + '\n\n' 
@@ -453,6 +465,10 @@ def callback_minute(bot, job):
             # Send notifications to users.
             for user_id in users_to_notify:
                 bot.send_message(chat_id=user_id, text=notification_text, reply_markup=notify_keyboard(), parse_mode=ParseMode.HTML)
+                
+                # Write to log
+                logger.info("'" + checking_ttb.shortname + "' notification was sent to user " + str(user_id))
+                
                 time.sleep(3)
                 
             
@@ -473,8 +489,10 @@ token_to_use = 'token.dev'
 #token_to_use = 'token.release'
 
 try:
-    token_file = open('tokens/' + token_to_use) 
+    token_file = open(tokens_dir + token_to_use) 
 except Exception:
+    # Write to log
+    logger.critical("no token file '" + tokens_dir + token_to_use + "', exit")
     print("No token file \'" + token_to_use + "\'. You should put it into 'tokens/' dir. Exit.")
     exit()
 
