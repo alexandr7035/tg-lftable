@@ -17,10 +17,11 @@ import sqlite3
 import time
 
 # See static.py to understant how it works.
-# This file contains TTBS objects, their attributes, paths to databases and token files. 
+# This file contains app version, TTBS objects, their attributes, paths to databases and token files. 
 from static import *
 
 
+"""
 # Logging settings. Log all exceptions.
 logging.basicConfig(filename="lftable.log", level=logging.INFO)
 logger = logging.getLogger('mylogger')
@@ -29,6 +30,18 @@ logger = logging.getLogger('mylogger')
 def my_handler(type, value, tb):
     logger.exception("Uncaught exception: {0}".format(str(value)))
 sys.excepthook = my_handler
+
+"""
+
+# Logging settings.
+logging_filename = log_dir + 'lftable-' + datetime.now().strftime('%Y%m%d-%H%M%S') + '.log'
+
+logger = logging.getLogger('lftable')
+logger.setLevel(logging.DEBUG)
+
+filehandler = logging.FileHandler(filename=logging_filename)
+filehandler.setFormatter(logging.Formatter('%(filename)s [LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s'))
+logger.addHandler(filehandler)
 
 
 
@@ -59,6 +72,10 @@ def first_run_check():
     except Exception:
         pass  
     
+    try:
+        os.mkdir(log_dir)
+    except Exception:
+        pass  
  
     if not os.path.exists(users_db):
         conn = sqlite3.connect(users_db)
