@@ -3,3 +3,5 @@ tokens
 *.pyc
 *.pyo
 __pycache__
+*.log
+db
