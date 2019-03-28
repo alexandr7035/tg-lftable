@@ -39,7 +39,7 @@ if not os.path.exists('log/'):
         sys.exit()
 
 # Uncomment this and see 'log/lftable-exceptions.log' if something goes wrong.
-"""
+#"""
 # Logger for all exceptions.
 logging.basicConfig(filename=log_dir + "lftable-exceptions.log", level=logging.DEBUG)
 exception_logger = logging.getLogger('exception_logger')
@@ -48,7 +48,7 @@ exception_logger = logging.getLogger('exception_logger')
 def my_handler(type, value, tb):
     exception_logger.exception("Uncaught exception: {0}".format(str(value)))
 sys.excepthook = my_handler
-"""
+#"""
 
 # A simple logger
 logging_filename = log_dir + 'lftable-' + datetime.now().strftime('%Y%m%d-%H%M%S') + '.log'
@@ -416,12 +416,13 @@ def main_menu_keyboard():
     pravo_c3.btn = InlineKeyboardButton('Правоведение - 3⃣', callback_data='answer_p3')
     pravo_c4.btn = InlineKeyboardButton('Правоведение - 4⃣', callback_data='answer_p4')
 
+    mag_c1.btn = InlineKeyboardButton('Магистратура - 1⃣', callback_data='answer_m1')
+    mag_c2.btn = InlineKeyboardButton('Магистратура - 2⃣', callback_data='answer_m2')
     
-    keyboard = [[pravo_c1.btn],
-                [pravo_c2.btn],
-                [pravo_c3.btn],
-                [pravo_c4.btn]]            
-              
+    keyboard = [[pravo_c1.btn, pravo_c2.btn],
+                [pravo_c3.btn, pravo_c4.btn],
+                [mag_c1.btn, mag_c2.btn]]           
+          
     return(InlineKeyboardMarkup(keyboard))
 
 
