@@ -69,6 +69,31 @@ logger.info("the program was STARTED now")
 ########################################################################
 
 
+
+
+
+# Get timetable's mtime using urllib module. 
+def ttb_gettime(ttb):
+    
+    response =  urllib.request.urlopen(ttb.url, timeout=25)
+    
+    # Get date from HTTP header.
+    native_date = ' '.join(dict(response.headers)['Last-Modified'].rsplit()[1:-1])
+    
+    # Transfer date to normal format.
+    gmt_date = datetime.strptime(native_date, '%d %b %Y %H:%M:%S')
+    
+    # Transfer date to our timezone (GMT+3).
+    old_tz = pytz.timezone('Europe/London')
+    new_tz = pytz.timezone('Europe/Minsk')
+    
+    date = old_tz.localize(gmt_date).astimezone(new_tz) 
+    
+    return(date)
+
+
+
+
 # Create necessary project dirs and files.
 # (See 'static.py' for values of the variables)
 def first_run_check():
@@ -171,7 +196,7 @@ def db_set_times_after_run():
     
     for timetable in all_timetables:
         
-        update_time = datetime.now().strftime('%d.%m.%Y %H:%M:%S')
+        update_time = ttb_gettime(timetable).strftime('%d.%m.%Y %H:%M:%S')
         
         cursor.execute("UPDATE times SET time = '" + update_time + "' WHERE (ttb = ?)", (timetable.shortname,));
         
@@ -189,29 +214,7 @@ db_set_times_after_run()
 
 
 
-############################# Timetables #########################################
 
-
-
-
-# Get timetable's mtime using urllib module. 
-def ttb_gettime(ttb):
-    
-    response =  urllib.request.urlopen(ttb.url, timeout=25)
-    
-    # Get date from HTTP header.
-    native_date = ' '.join(dict(response.headers)['Last-Modified'].rsplit()[1:-1])
-    
-    # Transfer date to normal format.
-    gmt_date = datetime.strptime(native_date, '%d %b %Y %H:%M:%S')
-    
-    # Transfer date to our timezone (GMT+3).
-    old_tz = pytz.timezone('Europe/London')
-    new_tz = pytz.timezone('Europe/Minsk')
-    
-    date = old_tz.localize(gmt_date).astimezone(new_tz) 
-    
-    return(date)
                                                 
 
 # Checks if user is notified when timetable is updated.
