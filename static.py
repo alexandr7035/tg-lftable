@@ -14,8 +14,9 @@ statistics_db = db_dir + 'statistics.db'
 tokens_dir = 'tokens/'
 
 
-# Interval for update checks (s).
+# Intervals for update checks and notifications(s).
 check_updates_interval = 120
+send_message_interval = 3
 
 # Class for storing timetable's options.
 class TTBS():

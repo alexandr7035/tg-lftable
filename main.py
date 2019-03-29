@@ -481,14 +481,14 @@ def callback_minute(bot, job):
                 # Write to log
                 logger.info("'" + checking_ttb.shortname + "' notification was sent to user " + str(user_id))
                 
-                time.sleep(3)
+                time.sleep(send_message_interval)
                 
             
             # Writing new update time to the database.
             cursor_times_db.execute("UPDATE times SET time = '" + update_time + "' WHERE (ttb = ?)", (checking_ttb.shortname,));
             conn_times_db.commit()
             
-        time.sleep(3)
+        time.sleep(send_message_interval)
     
     # Close 'times.db' until next check.
     conn_times_db.close()
