@@ -68,11 +68,8 @@ logger.info("the program was STARTED now")
 
 ########################################################################
 
-
-
-
-
-# Get timetable's mtime using urllib module. 
+# The most important function of the program.
+# Get and return timetable's mtime using urllib module. 
 def ttb_gettime(ttb):
     
     response =  urllib.request.urlopen(ttb.url, timeout=25)
@@ -92,7 +89,8 @@ def ttb_gettime(ttb):
     return(date)
 
 
-
+########################################################################
+########################################################################
 
 # Create necessary project dirs and files.
 # (See 'static.py' for values of the variables)
@@ -163,7 +161,27 @@ def first_run_check():
         conn.commit()
         conn.close()
 
+########################################################################
 
+# Sets times to the 'times.db' immediately after the run WITHOUT notifiying users 
+# Prevents late notifications if the program was down for a long time.
+def db_set_times_after_run():
+    conn = sqlite3.connect(times_db)
+    cursor = conn.cursor()
+    
+    for timetable in all_timetables:
+        
+        update_time = ttb_gettime(timetable).strftime('%d.%m.%Y %H:%M:%S')
+        
+        cursor.execute("UPDATE times SET time = '" + update_time + "' WHERE (ttb = ?)", (timetable.shortname,));
+        
+    conn.commit()
+    conn.close()
+
+    
+        
+########################################################################        
+# Collecting statistics.
 # Writes uniq user ids to 'statistics.db'
 def send_statistics(user_id):
     conn = sqlite3.connect(statistics_db)
@@ -185,38 +203,10 @@ def send_statistics(user_id):
         logger.info("a new user "  + str(user_id) + " added to 'statistics.db'")
         
     conn.close()
-    
-        
-        
-# Sets times to the 'times.db' immediately after the run WITHOUT notifiying users 
-# Prevents late notifications if the program was down for a long time.
-def db_set_times_after_run():
-    conn = sqlite3.connect(times_db)
-    cursor = conn.cursor()
-    
-    for timetable in all_timetables:
-        
-        update_time = ttb_gettime(timetable).strftime('%d.%m.%Y %H:%M:%S')
-        
-        cursor.execute("UPDATE times SET time = '" + update_time + "' WHERE (ttb = ?)", (timetable.shortname,));
-        
-    conn.commit()
-    conn.close()
 
+########################################################################
 
-
-
-first_run_check()
-db_set_times_after_run()
-
-
-
-
-
-
-
-                                                
-
+# NOTIFICATIONS.
 # Checks if user is notified when timetable is updated.
 # Used to set text on the "notify" button.
 def check_user_notified(ttb, user_id):
@@ -241,9 +231,20 @@ def check_user_notified(ttb, user_id):
     else:
            return False
            
+########################################################################
 
 
-############################### Bot ############################################
+first_run_check()
+db_set_times_after_run()
+
+
+
+                                                
+
+
+
+
+############################### Bot commands ############################################
 
 # /start command --> calls main menu.
 def start(bot, update):
@@ -251,7 +252,7 @@ def start(bot, update):
                            reply_markup=main_menu_keyboard(), timeout=25)
 
    
-
+# Bot's behavior depending on the button pressed.
 def button_actions(bot, update):
     query = update.callback_query
     
@@ -290,7 +291,40 @@ def button_actions(bot, update):
     if current_callback in  ['answer_p1', 'answer_p2', 'answer_p3', 'answer_p4', 
                              'answer_m1', 'answer_m2',
                              'refresh', 'notify']:
-
+        
+        if current_callback == 'notify':
+            # Disable if user id is already in the db. Delete row from db.
+            if check_user_notified(current_ttb, cid):
+                conn = sqlite3.connect(users_db)
+                cursor = conn.cursor()
+        
+                cursor.execute('DELETE FROM ' + current_ttb.shortname + ' WHERE (users = \'' + str(cid) + '\')')
+                result = cursor.fetchall()
+            
+                # Save changes and close.
+                conn.commit()
+                conn.close()
+            
+                # Write to log
+                logger.info('user ' + str(cid) + " disabled notifications for the '" + current_ttb.shortname + "' timetable")
+                    
+            # Enable notifying. Insert user id into db.
+            else:
+                conn = sqlite3.connect(users_db)
+                cursor = conn.cursor()
+        
+                cursor.execute('INSERT INTO ' + current_ttb.shortname + ' VALUES (\'' + str(cid) + '\')')
+                result = cursor.fetchall()
+            
+                # Save changesa and close.
+                conn.commit()
+                conn.close()
+                
+                # Write to log
+                logger.info('user ' + str(cid) + " enabled notifications for the '" + current_ttb.shortname + "' timetable")
+        
+        
+        
         bot.edit_message_text(chat_id=query.message.chat_id,
                         message_id=query.message.message_id,
                         text=answer_message(),
@@ -305,7 +339,8 @@ def button_actions(bot, update):
         # Write to log
         logger.info('user ' + str(cid) + " deleted notification (message: " + str(query.message.message_id) + ")")
 
-############################# Messages #########################################
+
+############################# Bot messages' text #########################################
 
 # Main menu text
 def main_menu_message():
@@ -321,8 +356,9 @@ def main_menu_message():
     menu_text += 'Выберите нужное расписание:'
 
     return(menu_text)
+    
 
-
+# The message for a certain timetable.
 # The message text is formed in accordance with the timetable selected in the main menu.
 def answer_message():
     
@@ -354,36 +390,7 @@ def answer_message():
     elif current_callback == 'notify':
         current_ttb = old_ttb
         
-        # Disable if user id is already in the db. Delete row from db.
-        if check_user_notified(current_ttb, cid):
-            conn = sqlite3.connect(users_db)
-            cursor = conn.cursor()
         
-            cursor.execute('DELETE FROM ' + current_ttb.shortname + ' WHERE (users = \'' + str(cid) + '\')')
-            result = cursor.fetchall()
-            
-            # Save changes and close.
-            conn.commit()
-            conn.close()
-            
-            # Write to log
-            logger.info('user ' + str(cid) + " disabled notifications for the '" + current_ttb.shortname + "' timetable")
-            
-         
-        # Enable notifying. Insert user id into db.
-        else:
-            conn = sqlite3.connect(users_db)
-            cursor = conn.cursor()
-        
-            cursor.execute('INSERT INTO ' + current_ttb.shortname + ' VALUES (\'' + str(cid) + '\')')
-            result = cursor.fetchall()
-            
-            # Save changesa and close.
-            conn.commit()
-            conn.close()
-            
-            # Write to log
-            logger.info('user ' + str(cid) + " enabled notifications for the '" + current_ttb.shortname + "' timetable")
         
     # Get the timetable's "mtime"
     ttb_datetime = ttb_gettime(current_ttb)
@@ -413,74 +420,8 @@ def answer_message():
     # Return this text
     return(answer_text)
     
-    
-    
-############################ Keyboards #########################################
 
-# Main menu keyboard.
-# 4 buttons in main menu. Each button is designed for the corresponding timetable (1-4 course)
-def main_menu_keyboard():
-    
-    pravo_c1.btn = InlineKeyboardButton('Правоведение - 1⃣', callback_data='answer_p1')
-    pravo_c2.btn = InlineKeyboardButton('Правоведение - 2⃣', callback_data='answer_p2')
-    pravo_c3.btn = InlineKeyboardButton('Правоведение - 3⃣', callback_data='answer_p3')
-    pravo_c4.btn = InlineKeyboardButton('Правоведение - 4⃣', callback_data='answer_p4')
-
-    mag_c1.btn = InlineKeyboardButton('Магистратура - 1⃣', callback_data='answer_m1')
-    mag_c2.btn = InlineKeyboardButton('Магистратура - 2⃣', callback_data='answer_m2')
-    
-    keyboard = [[pravo_c1.btn, pravo_c2.btn],
-                [pravo_c3.btn, pravo_c4.btn],
-                [mag_c1.btn, mag_c2.btn]]           
-          
-    return(InlineKeyboardMarkup(keyboard))
-
-
-
-# Menu for specific timetable. One button returns to main menu, one refreshes date and time info.
-def answer_keyboard():
-    
-    # Used for notify button.
-    global current_ttb
-    
-    # Button to refresh current answer menu (so you don't have to come back to main menu).
-    refresh_button = InlineKeyboardButton('🔄 Обновить   ', callback_data='refresh')
-    
-    # For notify function. Adds info to DB.
-    if check_user_notified(current_ttb, cid):
-        notify_text = '❌ Не уведомлять'
-    else:
-        notify_text = '🛎 Уведомлять'
-    
-    # Button to put user id into db in order to notify him when the timetable is updated. 
-    notify_button = InlineKeyboardButton(notify_text, callback_data='notify')
-    
- 
-    # Sends user back to the main menu.
-    back_button = InlineKeyboardButton('⬅️ Назад в меню', callback_data='main_menu')
-
-    keyboard = [[refresh_button],
-                [notify_button],
-                  [back_button]]
-                  
-    return(InlineKeyboardMarkup(keyboard))
-
-
-
-############################# Notify part #########################################
-
-
-# Keyboard for the message.
-def notify_keyboard():
-    
-    del_notification_button = InlineKeyboardButton('Скрыть',  callback_data='delete_notification')
-    
-    keyboard = [[del_notification_button]]
-    
-    return(InlineKeyboardMarkup(keyboard))
-
-
-# Send message.
+# Notification message. 
 def callback_minute(bot, job):
     
     conn_times_db = sqlite3.connect(times_db)
@@ -551,9 +492,71 @@ def callback_minute(bot, job):
     
     # Close 'times.db' until next check.
     conn_times_db.close()
+    
+    
+############################ Keyboards #########################################
+
+# Main menu keyboard.
+# 4 buttons in main menu. Each button is designed for the corresponding timetable (1-4 course)
+def main_menu_keyboard():
+    
+    pravo_c1.btn = InlineKeyboardButton('Правоведение - 1⃣', callback_data='answer_p1')
+    pravo_c2.btn = InlineKeyboardButton('Правоведение - 2⃣', callback_data='answer_p2')
+    pravo_c3.btn = InlineKeyboardButton('Правоведение - 3⃣', callback_data='answer_p3')
+    pravo_c4.btn = InlineKeyboardButton('Правоведение - 4⃣', callback_data='answer_p4')
+
+    mag_c1.btn = InlineKeyboardButton('Магистратура - 1⃣', callback_data='answer_m1')
+    mag_c2.btn = InlineKeyboardButton('Магистратура - 2⃣', callback_data='answer_m2')
+    
+    keyboard = [[pravo_c1.btn, pravo_c2.btn],
+                [pravo_c3.btn, pravo_c4.btn],
+                [mag_c1.btn, mag_c2.btn]]           
+          
+    return(InlineKeyboardMarkup(keyboard))
 
 
-############################# Bot settings #########################################
+
+# Menu for specific timetable. One button returns to main menu, one refreshes date and time info.
+def answer_keyboard():
+    
+    # Used for notify button.
+    global current_ttb
+    
+    # Button to refresh current answer menu (so you don't have to come back to main menu).
+    refresh_button = InlineKeyboardButton('🔄 Обновить   ', callback_data='refresh')
+    
+    # For notify function. Adds info to DB.
+    if check_user_notified(current_ttb, cid):
+        notify_text = '❌ Не уведомлять'
+    else:
+        notify_text = '🛎 Уведомлять'
+    
+    # Button to put user id into db in order to notify him when the timetable is updated. 
+    notify_button = InlineKeyboardButton(notify_text, callback_data='notify')
+    
+ 
+    # Sends user back to the main menu.
+    back_button = InlineKeyboardButton('⬅️ Назад в меню', callback_data='main_menu')
+
+    keyboard = [[refresh_button],
+                [notify_button],
+                  [back_button]]
+                  
+    return(InlineKeyboardMarkup(keyboard))
+
+
+# Keyboard for notification. Only one button to delete message.
+def notify_keyboard():
+    
+    del_notification_button = InlineKeyboardButton('Скрыть',  callback_data='delete_notification')
+    
+    keyboard = [[del_notification_button]]
+    
+    return(InlineKeyboardMarkup(keyboard))
+
+
+
+############################# Bot settings #############################
 
 # Use dev token
 token_to_use = 'token.dev'
@@ -588,5 +591,5 @@ dp.add_handler(CallbackQueryHandler(button_actions))
 
 # Checking for updates.
 updater.start_polling(clean=True)
-# Stop bot if  <Ctrl + C> pressed.
+# Stop bot if  <Ctrl + C> is pressed.
 updater.idle()
