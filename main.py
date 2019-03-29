@@ -364,7 +364,7 @@ def answer_message():
             conn.close()
             
             # Write to log
-            logger.info('user ' + str(cid) + " disabled notifications for the'" + current_ttb.shortname + "' timetable")
+            logger.info('user ' + str(cid) + " disabled notifications for the '" + current_ttb.shortname + "' timetable")
             
          
         # Enable notifying. Insert user id into db.
@@ -380,7 +380,7 @@ def answer_message():
             conn.close()
             
             # Write to log
-            logger.info('user ' + str(cid) + " enabled notifications for the'" + current_ttb.shortname + "' timetable")
+            logger.info('user ' + str(cid) + " enabled notifications for the '" + current_ttb.shortname + "' timetable")
         
     # Get the timetable's "mtime"
     ttb_datetime = ttb_gettime(current_ttb)
