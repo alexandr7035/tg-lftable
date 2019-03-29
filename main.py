@@ -38,6 +38,7 @@ if not os.path.exists('log/'):
         print("CRITICAL ERROR: can't create 'log/' directory. Exit")
         sys.exit()
 
+
 # Uncomment this and see 'log/lftable-exceptions.log' if something goes wrong.
 #"""
 # Logger for all exceptions.
@@ -51,8 +52,8 @@ sys.excepthook = my_handler
 #"""
 
 # A simple logger
-logging_filename = log_dir + 'lftable-' + datetime.now().strftime('%Y%m%d-%H%M%S') + '.log'
-#logging_filename = log_dir + 'lftable.log'
+#logging_filename = log_dir + 'lftable-' + datetime.now().strftime('%Y%m%d-%H%M%S') + '.log'
+logging_filename = log_dir + 'lftable.log'
 
 logger = logging.getLogger('lftable')
 logger.setLevel(logging.DEBUG)
@@ -96,8 +97,8 @@ def first_run_check():
         # Write to log
         logger.info("'" + users_db + "' database was created")
         
-        for table_name in ['pravo_c1', 'pravo_c2', 'pravo_c3', 'pravo_c4']:
-            cursor.execute('CREATE TABLE ' + table_name + ' (users)')
+        for timetable in all_timetables:
+            cursor.execute('CREATE TABLE ' + timetable.shortname + ' (users)')
             
         conn.commit()
         conn.close()
@@ -116,8 +117,8 @@ def first_run_check():
         cursor.execute('CREATE TABLE times (ttb, time)')
         conn.commit()
         
-        for ttb in ['pravo_c1', 'pravo_c2', 'pravo_c3', 'pravo_c4']:
-            cursor.execute('INSERT INTO times VALUES ("' + ttb + '", "")')
+        for timetable in all_timetables:
+            cursor.execute('INSERT INTO times VALUES ("' + timetable.shortname + '", "")')
         
         conn.commit()
         conn.close()
@@ -168,16 +169,14 @@ def db_set_times_after_run():
     conn = sqlite3.connect(times_db)
     cursor = conn.cursor()
     
-    for ttb in [pravo_c1, pravo_c2, pravo_c3, pravo_c4]:
+    for timetable in all_timetables:
         
         update_time = datetime.now().strftime('%d.%m.%Y %H:%M:%S')
         
-        cursor.execute("UPDATE times SET time = '" + update_time + "' WHERE (ttb = ?)", (ttb.shortname,));
+        cursor.execute("UPDATE times SET time = '" + update_time + "' WHERE (ttb = ?)", (timetable.shortname,));
         
     conn.commit()
     conn.close()
-
-
 
 
 
@@ -285,7 +284,9 @@ def button_actions(bot, update):
                                 
     
     # Calls answer with certain timetable depending on the button pressed before.
-    if current_callback in  ['answer_p1', 'answer_p2', 'answer_p3', 'answer_p4', 'refresh', 'notify']:
+    if current_callback in  ['answer_p1', 'answer_p2', 'answer_p3', 'answer_p4', 
+                             'answer_m1', 'answer_m2',
+                             'refresh', 'notify']:
 
         bot.edit_message_text(chat_id=query.message.chat_id,
                         message_id=query.message.message_id,
@@ -337,6 +338,12 @@ def answer_message():
         current_ttb = pravo_c3
     elif current_callback == 'answer_p4':
         current_ttb = pravo_c4
+    
+    elif current_callback == 'answer_m1':
+        current_ttb = mag_c1
+    elif current_callback == 'answer_m2':
+        current_ttb = mag_c2
+        
     elif current_callback == 'refresh':
         current_ttb = old_ttb
     
@@ -476,12 +483,11 @@ def callback_minute(bot, job):
     conn_times_db = sqlite3.connect(times_db)
     cursor_times_db = conn_times_db.cursor()
     
-    for checking_ttb in [pravo_c1, pravo_c2, pravo_c3, pravo_c4]:
+    for checking_ttb in all_timetables:
         
         # Get ttb update time from law.bsu.by
         update_time = ttb_gettime(checking_ttb).strftime('%d.%m.%Y %H:%M:%S')
         
-       
         
         # Get old update time from db.
         cursor_times_db.execute("SELECT time  FROM times WHERE (ttb = ?)", (checking_ttb.shortname,));
