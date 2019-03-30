@@ -510,7 +510,7 @@ def answer_keyboard():
     
     # For notify function. Adds info to DB.
     if check_user_notified(current_ttb, cid):
-        notify_text = '❌ Не уведомлять'
+        notify_text = '🔕 Не уведомлять'
     else:
         notify_text = '🛎 Уведомлять'
     
