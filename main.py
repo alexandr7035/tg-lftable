@@ -31,12 +31,7 @@ current_ttb = None
 
 ######################## Logging settings ##############################
 
-if not os.path.exists('log/'):
-    try:
-        os.mkdir('log/')
-    except Exception:
-        print("CRITICAL ERROR: can't create 'log/' directory. Exit")
-        sys.exit()
+
 
 
 # Uncomment this and see 'log/lftable-exceptions.log' if something goes wrong.
@@ -230,17 +225,6 @@ def check_user_notified(ttb, user_id):
            return True
     else:
            return False
-           
-########################################################################
-
-
-first_run_check()
-db_set_times_after_run()
-
-
-
-                                                
-
 
 
 
@@ -386,7 +370,6 @@ def answer_message():
     elif current_callback == 'refresh':
         current_ttb = old_ttb
     
-    # If "notify" button is pressed.
     elif current_callback == 'notify':
         current_ttb = old_ttb
         
@@ -558,38 +541,64 @@ def notify_keyboard():
 
 ############################# Bot settings #############################
 
-# Use dev token
-token_to_use = 'token.dev'
-#token_to_use = 'token.release'
+def main():
+     
+    # Nothing will work without logging
+    if not os.path.exists('log/'):
+        try:
+            os.mkdir('log/')
+        except Exception:
+            print("CRITICAL ERROR: can't create 'log/' directory. Exit")
+            sys.exit()
+    
 
-try:
-    token_file = open(tokens_dir + token_to_use) 
-except Exception:
-    # Write to log
-    logger.critical("no token file '" + tokens_dir + token_to_use + "', exit")
-    print("No token file \'" + token_to_use + "\'. You should put it into 'tokens/' dir. Exit.")
-    exit()
+    # Use dev token
+    token_to_use = 'token.dev'
+    #token_to_use = 'token.release'
 
+    try:
+        token_file = open(tokens_dir + token_to_use) 
+    except Exception:
+        # Write to log
+        logger.critical("no token file '" + tokens_dir + token_to_use + "', exit")
+        print("No token file \'" + token_to_use + "\'. You should put it into 'tokens/' dir. Exit.")
+        exit()
 
+    
+    # Create directories and files.
+    first_run_check()
+    # Write times to the db after the start 
+    # to prevent late notifications.
+    db_set_times_after_run()
+    
         
-# Read token
-token_str = token_file.readline()[:-1] 
-token_file.close()
+    # Read token
+    token_str = token_file.readline()[:-1] 
+    token_file.close()
 
-updater = Updater(token_str)
-dp = updater.dispatcher
+    updater = Updater(token_str)
+    dp = updater.dispatcher
 
-# Run ttb checks on on schedule (see check_updates_interval in 'static.py'
-job = updater.job_queue
-job.run_repeating(callback_minute, interval = check_updates_interval, first=0)
-
-
-# Handlers
-dp.add_handler(CommandHandler('start', start))
-dp.add_handler(CallbackQueryHandler(button_actions))
+    # Run ttb checks on on schedule (see check_updates_interval in 'static.py'
+    job = updater.job_queue
+    job.run_repeating(callback_minute, interval = check_updates_interval, first=0)
 
 
-# Checking for updates.
-updater.start_polling(clean=True)
-# Stop bot if  <Ctrl + C> is pressed.
-updater.idle()
+    # Handlers
+    dp.add_handler(CommandHandler('start', start))
+    dp.add_handler(CallbackQueryHandler(button_actions))
+
+
+    # Checking for updates.
+    updater.start_polling(clean=True)
+    # Stop bot if  <Ctrl + C> is pressed.
+    updater.idle()
+
+    
+
+    
+    
+if __name__ == "__main__":
+    main()
+
+
