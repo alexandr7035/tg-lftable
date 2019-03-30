@@ -506,7 +506,7 @@ def answer_keyboard():
     global current_ttb
     
     # Button to refresh current answer menu (so you don't have to come back to main menu).
-    refresh_button = InlineKeyboardButton('🔄 Обновить   ', callback_data='refresh')
+    refresh_button = InlineKeyboardButton('🔄 Обновить страницу', callback_data='refresh')
     
     # For notify function. Adds info to DB.
     if check_user_notified(current_ttb, cid):
