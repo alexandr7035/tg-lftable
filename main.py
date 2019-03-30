@@ -435,7 +435,7 @@ def callback_minute(bot, job):
             # Write to log
             logger.info("'" + checking_ttb.shortname + "' timetable was updated at " + update_time)
 
-            notification_text = 'Появилось расписание <b>"' + checking_ttb.name + '". </b>\n'
+            notification_text = '🔔 Появилось расписание <b>"' + checking_ttb.name + '". 🔔</b>\n'
             notification_text += 'Дата обновления: ' + dt_update_time.strftime('%d.%m.%Y') + '\n'
             notification_text += 'Время обновления: '+ dt_update_time.strftime('%H:%M') + '\n\n' 
             notification_text += '<b>Скачать</b>: ' + checking_ttb.url + "\n\n"
