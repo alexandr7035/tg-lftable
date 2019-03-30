@@ -399,7 +399,6 @@ def answer_message():
     # For 'refresh' function.
     old_ttb = current_ttb
     
-    
     # Return this text
     return(answer_text)
     
@@ -512,7 +511,7 @@ def answer_keyboard():
     if check_user_notified(current_ttb, cid):
         notify_text = '🔕 Не уведомлять'
     else:
-        notify_text = '🛎 Уведомлять'
+        notify_text = '🔔 Уведомлять'
     
     # Button to put user id into db in order to notify him when the timetable is updated. 
     notify_button = InlineKeyboardButton(notify_text, callback_data='notify')
