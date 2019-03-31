@@ -509,9 +509,9 @@ def answer_keyboard():
     
     # For notify function. Adds info to DB.
     if check_user_notified(current_ttb, cid):
-        notify_text = '🔕 Не уведомлять'
+        notify_text = u'🔕 Не уведомлять'
     else:
-        notify_text = '🔔 Уведомлять'
+        notify_text = u'🔔 Уведомлять'
     
     # Button to put user id into db in order to notify him when the timetable is updated. 
     notify_button = InlineKeyboardButton(notify_text, callback_data='notify')
