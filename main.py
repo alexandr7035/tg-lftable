@@ -11,6 +11,8 @@ import pytz
 import os
 import sys
 
+import random
+
 import logging
 import sqlite3
 
@@ -334,9 +336,17 @@ def main_menu_message():
     menu_text += 'Источник: https://law.bsu.by\n'
     menu_text += 'Информация об авторских правах юрфака: https://law.bsu.by/avtorskie-prava.html\n'
     
-    # To fix badrequest error.
-    menu_text += 'Страница обновлена: ' + datetime.now().strftime("%d-%m-%Y %H:%M:%S") + '\n\n'
-  
+    # Use the string of random space symbols to fix badrequest error.
+    menu_text += u'\u2009'
+    for i in range(1,15):
+        if random.randint(0,1) == 1:
+            menu_text += '\u2009'
+            #menu_text += '1'
+        else:
+            #menu_text += '0'
+            menu_text += '\u0020'
+    menu_text += '\n'
+    
     menu_text += 'Выберите нужное расписание:'
 
     return(menu_text)
@@ -395,6 +405,7 @@ def answer_message():
     # To fix badrequest error.
     answer_text += '-------------------\n'
     answer_text += 'Страница обновлена: ' + datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+
     
     # For 'refresh' function.
     old_ttb = current_ttb
