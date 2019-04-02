@@ -400,11 +400,11 @@ def answer_message():
     answer_text += 'Дата обновления: ' + update_date + '\n'
     answer_text += 'Время обновления: '+ update_time + '\n\n'
 
-    answer_text += '<b>СКАЧАТЬ</b>: ' + current_ttb.url + "\n\n"
+    answer_text += '<b>Скачать</b>: ' + current_ttb.url + "\n\n"
     
     # To fix badrequest error.
     answer_text += '-------------------\n'
-    answer_text += 'Страница обновлена: ' + datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+    answer_text += 'Страница обновлена: ' + datetime.now().strftime("%d.%m.%Y %H:%M:%S")
 
     
     # For 'refresh' function.
