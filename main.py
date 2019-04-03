@@ -11,6 +11,8 @@ import pytz
 import os
 import sys
 
+import random
+
 import logging
 import sqlite3
 
@@ -31,6 +33,7 @@ current_ttb = None
 
 ######################## Logging settings ##############################
 
+# Nothing will work without logging
 if not os.path.exists('log/'):
     try:
         os.mkdir('log/')
@@ -38,8 +41,9 @@ if not os.path.exists('log/'):
         print("CRITICAL ERROR: can't create 'log/' directory. Exit")
         sys.exit()
 
+
 # Uncomment this and see 'log/lftable-exceptions.log' if something goes wrong.
-"""
+#"""
 # Logger for all exceptions.
 logging.basicConfig(filename=log_dir + "lftable-exceptions.log", level=logging.DEBUG)
 exception_logger = logging.getLogger('exception_logger')
@@ -48,11 +52,11 @@ exception_logger = logging.getLogger('exception_logger')
 def my_handler(type, value, tb):
     exception_logger.exception("Uncaught exception: {0}".format(str(value)))
 sys.excepthook = my_handler
-"""
+#"""
 
 # A simple logger
-logging_filename = log_dir + 'lftable-' + datetime.now().strftime('%Y%m%d-%H%M%S') + '.log'
-#logging_filename = log_dir + 'lftable.log'
+#logging_filename = log_dir + 'lftable-' + datetime.now().strftime('%Y%m%d-%H%M%S') + '.log'
+logging_filename = log_dir + 'lftable.log'
 
 logger = logging.getLogger('lftable')
 logger.setLevel(logging.DEBUG)
@@ -64,9 +68,31 @@ logger.addHandler(filehandler)
 # Write 'program started' message to log
 logger.info("the program was STARTED now")
 
-
 ########################################################################
 
+# The most important function of the program.
+# Get and return timetable's mtime using urllib module. 
+def ttb_gettime(ttb):
+    
+    response =  urllib.request.urlopen(ttb.url, timeout=25)
+    
+    # Get date from HTTP header.
+    native_date = ' '.join(dict(response.headers)['Last-Modified'].rsplit()[1:-1])
+    
+    # Transfer date to normal format.
+    gmt_date = datetime.strptime(native_date, '%d %b %Y %H:%M:%S')
+    
+    # Transfer date to our timezone (GMT+3).
+    old_tz = pytz.timezone('Europe/London')
+    new_tz = pytz.timezone('Europe/Minsk')
+    
+    date = old_tz.localize(gmt_date).astimezone(new_tz) 
+    
+    return(date)
+
+
+########################################################################
+########################################################################
 
 # Create necessary project dirs and files.
 # (See 'static.py' for values of the variables)
@@ -96,8 +122,8 @@ def first_run_check():
         # Write to log
         logger.info("'" + users_db + "' database was created")
         
-        for table_name in ['pravo_c1', 'pravo_c2', 'pravo_c3', 'pravo_c4']:
-            cursor.execute('CREATE TABLE ' + table_name + ' (users)')
+        for timetable in all_timetables:
+            cursor.execute('CREATE TABLE ' + timetable.shortname + ' (users)')
             
         conn.commit()
         conn.close()
@@ -116,8 +142,8 @@ def first_run_check():
         cursor.execute('CREATE TABLE times (ttb, time)')
         conn.commit()
         
-        for ttb in ['pravo_c1', 'pravo_c2', 'pravo_c3', 'pravo_c4']:
-            cursor.execute('INSERT INTO times VALUES ("' + ttb + '", "")')
+        for timetable in all_timetables:
+            cursor.execute('INSERT INTO times VALUES ("' + timetable.shortname + '", "")')
         
         conn.commit()
         conn.close()
@@ -137,7 +163,27 @@ def first_run_check():
         conn.commit()
         conn.close()
 
+########################################################################
 
+# Sets times to the 'times.db' immediately after the run WITHOUT notifiying users 
+# Prevents late notifications if the program was down for a long time.
+def db_set_times_after_run():
+    conn = sqlite3.connect(times_db)
+    cursor = conn.cursor()
+    
+    for timetable in all_timetables:
+        
+        update_time = ttb_gettime(timetable).strftime('%d.%m.%Y %H:%M:%S')
+        
+        cursor.execute("UPDATE times SET time = '" + update_time + "' WHERE (ttb = ?)", (timetable.shortname,));
+        
+    conn.commit()
+    conn.close()
+
+    
+        
+########################################################################        
+# Collecting statistics.
 # Writes uniq user ids to 'statistics.db'
 def send_statistics(user_id):
     conn = sqlite3.connect(statistics_db)
@@ -159,62 +205,10 @@ def send_statistics(user_id):
         logger.info("a new user "  + str(user_id) + " added to 'statistics.db'")
         
     conn.close()
-    
-        
-        
-# Sets times to the 'times.db' immediately after the run WITHOUT notifiying users 
-# Prevents late notifications if the program was down for a long time.
-def db_set_times_after_run():
-    conn = sqlite3.connect(times_db)
-    cursor = conn.cursor()
-    
-    for ttb in [pravo_c1, pravo_c2, pravo_c3, pravo_c4]:
-        
-        update_time = datetime.now().strftime('%d.%m.%Y %H:%M:%S')
-        
-        cursor.execute("UPDATE times SET time = '" + update_time + "' WHERE (ttb = ?)", (ttb.shortname,));
-        
-    conn.commit()
-    conn.close()
 
+########################################################################
 
-
-
-
-
-first_run_check()
-db_set_times_after_run()
-
-
-
-
-
-
-############################# Timetables #########################################
-
-
-
-
-# Get timetable's mtime using urllib module. 
-def ttb_gettime(ttb):
-    
-    response =  urllib.request.urlopen(ttb.url, timeout=25)
-    
-    # Get date from HTTP header.
-    native_date = ' '.join(dict(response.headers)['Last-Modified'].rsplit()[1:-1])
-    
-    # Transfer date to normal format.
-    gmt_date = datetime.strptime(native_date, '%d %b %Y %H:%M:%S')
-    
-    # Transfer date to our timezone (GMT+3).
-    old_tz = pytz.timezone('Europe/London')
-    new_tz = pytz.timezone('Europe/Minsk')
-    
-    date = old_tz.localize(gmt_date).astimezone(new_tz) 
-    
-    return(date)
-                                                
-
+# NOTIFICATIONS.
 # Checks if user is notified when timetable is updated.
 # Used to set text on the "notify" button.
 def check_user_notified(ttb, user_id):
@@ -238,10 +232,10 @@ def check_user_notified(ttb, user_id):
            return True
     else:
            return False
-           
 
 
-############################### Bot ############################################
+
+############################### Bot commands ############################################
 
 # /start command --> calls main menu.
 def start(bot, update):
@@ -249,7 +243,7 @@ def start(bot, update):
                            reply_markup=main_menu_keyboard(), timeout=25)
 
    
-
+# Bot's behavior depending on the button pressed.
 def button_actions(bot, update):
     query = update.callback_query
     
@@ -285,8 +279,43 @@ def button_actions(bot, update):
                                 
     
     # Calls answer with certain timetable depending on the button pressed before.
-    if current_callback in  ['answer_p1', 'answer_p2', 'answer_p3', 'answer_p4', 'refresh', 'notify']:
-
+    if current_callback in  ['answer_p1', 'answer_p2', 'answer_p3', 'answer_p4', 
+                             'answer_m1', 'answer_m2',
+                             'refresh', 'notify']:
+        
+        if current_callback == 'notify':
+            # Disable if user id is already in the db. Delete row from db.
+            if check_user_notified(current_ttb, cid):
+                conn = sqlite3.connect(users_db)
+                cursor = conn.cursor()
+        
+                cursor.execute('DELETE FROM ' + current_ttb.shortname + ' WHERE (users = \'' + str(cid) + '\')')
+                result = cursor.fetchall()
+            
+                # Save changes and close.
+                conn.commit()
+                conn.close()
+            
+                # Write to log
+                logger.info('user ' + str(cid) + " disabled notifications for the '" + current_ttb.shortname + "' timetable")
+                    
+            # Enable notifying. Insert user id into db.
+            else:
+                conn = sqlite3.connect(users_db)
+                cursor = conn.cursor()
+        
+                cursor.execute('INSERT INTO ' + current_ttb.shortname + ' VALUES (\'' + str(cid) + '\')')
+                result = cursor.fetchall()
+            
+                # Save changesa and close.
+                conn.commit()
+                conn.close()
+                
+                # Write to log
+                logger.info('user ' + str(cid) + " enabled notifications for the '" + current_ttb.shortname + "' timetable")
+        
+        
+        
         bot.edit_message_text(chat_id=query.message.chat_id,
                         message_id=query.message.message_id,
                         text=answer_message(),
@@ -301,7 +330,8 @@ def button_actions(bot, update):
         # Write to log
         logger.info('user ' + str(cid) + " deleted notification (message: " + str(query.message.message_id) + ")")
 
-############################# Messages #########################################
+
+############################# Bot messages' text #########################################
 
 # Main menu text
 def main_menu_message():
@@ -311,14 +341,23 @@ def main_menu_message():
     menu_text += 'Источник: https://law.bsu.by\n'
     menu_text += 'Информация об авторских правах юрфака: https://law.bsu.by/avtorskie-prava.html\n'
     
-    # To fix badrequest error.
-    menu_text += 'Страница обновлена: ' + datetime.now().strftime("%d-%m-%Y %H:%M:%S") + '\n\n'
-  
+    # Use the string of random space symbols to fix badrequest error.
+    menu_text += u'\u2009'
+    for i in range(1,15):
+        if random.randint(0,1) == 1:
+            menu_text += '\u2009'
+            #menu_text += '1'
+        else:
+            #menu_text += '0'
+            menu_text += '\u0020'
+    menu_text += '\n'
+    
     menu_text += 'Выберите нужное расписание:'
 
     return(menu_text)
+    
 
-
+# The message for a certain timetable.
 # The message text is formed in accordance with the timetable selected in the main menu.
 def answer_message():
     
@@ -337,43 +376,19 @@ def answer_message():
         current_ttb = pravo_c3
     elif current_callback == 'answer_p4':
         current_ttb = pravo_c4
+    
+    elif current_callback == 'answer_m1':
+        current_ttb = mag_c1
+    elif current_callback == 'answer_m2':
+        current_ttb = mag_c2
+        
     elif current_callback == 'refresh':
         current_ttb = old_ttb
     
-    # If "notify" button is pressed.
     elif current_callback == 'notify':
         current_ttb = old_ttb
         
-        # Disable if user id is already in the db. Delete row from db.
-        if check_user_notified(current_ttb, cid):
-            conn = sqlite3.connect(users_db)
-            cursor = conn.cursor()
         
-            cursor.execute('DELETE FROM ' + current_ttb.shortname + ' WHERE (users = \'' + str(cid) + '\')')
-            result = cursor.fetchall()
-            
-            # Save changes and close.
-            conn.commit()
-            conn.close()
-            
-            # Write to log
-            logger.info('user ' + str(cid) + " disabled notifications for the'" + current_ttb.shortname + "' timetable")
-            
-         
-        # Enable notifying. Insert user id into db.
-        else:
-            conn = sqlite3.connect(users_db)
-            cursor = conn.cursor()
-        
-            cursor.execute('INSERT INTO ' + current_ttb.shortname + ' VALUES (\'' + str(cid) + '\')')
-            result = cursor.fetchall()
-            
-            # Save changesa and close.
-            conn.commit()
-            conn.close()
-            
-            # Write to log
-            logger.info('user ' + str(cid) + " enabled notifications for the'" + current_ttb.shortname + "' timetable")
         
     # Get the timetable's "mtime"
     ttb_datetime = ttb_gettime(current_ttb)
@@ -390,97 +405,31 @@ def answer_message():
     answer_text += 'Дата обновления: ' + update_date + '\n'
     answer_text += 'Время обновления: '+ update_time + '\n\n'
 
-    answer_text += '<b>СКАЧАТЬ</b>: ' + current_ttb.url + "\n\n"
+    answer_text += '<b>Скачать</b>: ' + current_ttb.url + "\n\n"
     
     # To fix badrequest error.
     answer_text += '-------------------\n'
-    answer_text += 'Страница обновлена: ' + datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+    answer_text += 'Страница обновлена: ' + datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+
     
     # For 'refresh' function.
     old_ttb = current_ttb
     
-    
     # Return this text
     return(answer_text)
     
-    
-    
-############################ Keyboards #########################################
 
-# Main menu keyboard.
-# 4 buttons in main menu. Each button is designed for the corresponding timetable (1-4 course)
-def main_menu_keyboard():
-    
-    pravo_c1.btn = InlineKeyboardButton('Правоведение - 1⃣', callback_data='answer_p1')
-    pravo_c2.btn = InlineKeyboardButton('Правоведение - 2⃣', callback_data='answer_p2')
-    pravo_c3.btn = InlineKeyboardButton('Правоведение - 3⃣', callback_data='answer_p3')
-    pravo_c4.btn = InlineKeyboardButton('Правоведение - 4⃣', callback_data='answer_p4')
-
-    
-    keyboard = [[pravo_c1.btn],
-                [pravo_c2.btn],
-                [pravo_c3.btn],
-                [pravo_c4.btn]]            
-              
-    return(InlineKeyboardMarkup(keyboard))
-
-
-
-# Menu for specific timetable. One button returns to main menu, one refreshes date and time info.
-def answer_keyboard():
-    
-    # Used for notify button.
-    global current_ttb
-    
-    # Button to refresh current answer menu (so you don't have to come back to main menu).
-    refresh_button = InlineKeyboardButton('🔄 Обновить   ', callback_data='refresh')
-    
-    # For notify function. Adds info to DB.
-    if check_user_notified(current_ttb, cid):
-        notify_text = '❌ Не уведомлять'
-    else:
-        notify_text = '🛎 Уведомлять'
-    
-    # Button to put user id into db in order to notify him when the timetable is updated. 
-    notify_button = InlineKeyboardButton(notify_text, callback_data='notify')
-    
- 
-    # Sends user back to the main menu.
-    back_button = InlineKeyboardButton('⬅️ Назад в меню', callback_data='main_menu')
-
-    keyboard = [[refresh_button],
-                [notify_button],
-                  [back_button]]
-                  
-    return(InlineKeyboardMarkup(keyboard))
-
-
-
-############################# Notify part #########################################
-
-
-# Keyboard for the message.
-def notify_keyboard():
-    
-    del_notification_button = InlineKeyboardButton('Скрыть',  callback_data='delete_notification')
-    
-    keyboard = [[del_notification_button]]
-    
-    return(InlineKeyboardMarkup(keyboard))
-
-
-# Send message.
+# Notification message. 
 def callback_minute(bot, job):
     
     conn_times_db = sqlite3.connect(times_db)
     cursor_times_db = conn_times_db.cursor()
     
-    for checking_ttb in [pravo_c1, pravo_c2, pravo_c3, pravo_c4]:
+    for checking_ttb in all_timetables:
         
         # Get ttb update time from law.bsu.by
         update_time = ttb_gettime(checking_ttb).strftime('%d.%m.%Y %H:%M:%S')
         
-       
         
         # Get old update time from db.
         cursor_times_db.execute("SELECT time  FROM times WHERE (ttb = ?)", (checking_ttb.shortname,));
@@ -501,7 +450,7 @@ def callback_minute(bot, job):
             # Write to log
             logger.info("'" + checking_ttb.shortname + "' timetable was updated at " + update_time)
 
-            notification_text = 'Появилось расписание <b>"' + checking_ttb.name + '". </b>\n'
+            notification_text = '🔔 Появилось расписание <b>"' + checking_ttb.name + '". 🔔</b>\n'
             notification_text += 'Дата обновления: ' + dt_update_time.strftime('%d.%m.%Y') + '\n'
             notification_text += 'Время обновления: '+ dt_update_time.strftime('%H:%M') + '\n\n' 
             notification_text += '<b>Скачать</b>: ' + checking_ttb.url + "\n\n"
@@ -530,53 +479,144 @@ def callback_minute(bot, job):
                 # Write to log
                 logger.info("'" + checking_ttb.shortname + "' notification was sent to user " + str(user_id))
                 
-                time.sleep(3)
+                time.sleep(send_message_interval)
                 
             
             # Writing new update time to the database.
             cursor_times_db.execute("UPDATE times SET time = '" + update_time + "' WHERE (ttb = ?)", (checking_ttb.shortname,));
             conn_times_db.commit()
             
-        time.sleep(3)
+        time.sleep(send_message_interval)
     
     # Close 'times.db' until next check.
     conn_times_db.close()
+    
+    
+############################ Keyboards #########################################
+
+# Main menu keyboard.
+# 4 buttons in main menu. Each button is designed for the corresponding timetable (1-4 course)
+def main_menu_keyboard():
+    
+    pravo_c1.btn = InlineKeyboardButton('Правоведение - 1⃣', callback_data='answer_p1')
+    pravo_c2.btn = InlineKeyboardButton('Правоведение - 2⃣', callback_data='answer_p2')
+    pravo_c3.btn = InlineKeyboardButton('Правоведение - 3⃣', callback_data='answer_p3')
+    pravo_c4.btn = InlineKeyboardButton('Правоведение - 4⃣', callback_data='answer_p4')
+
+    mag_c1.btn = InlineKeyboardButton('Магистратура - 1⃣', callback_data='answer_m1')
+    mag_c2.btn = InlineKeyboardButton('Магистратура - 2⃣', callback_data='answer_m2')
+    
+    keyboard = [[pravo_c1.btn, pravo_c2.btn],
+                [pravo_c3.btn, pravo_c4.btn],
+                [mag_c1.btn, mag_c2.btn]]           
+          
+    return(InlineKeyboardMarkup(keyboard))
 
 
-############################# Bot settings #########################################
 
-# Use dev token
-token_to_use = 'token.dev'
-#token_to_use = 'token.release'
+# Menu for specific timetable. One button returns to main menu, one refreshes date and time info.
+def answer_keyboard():
+    
+    # Used for notify button.
+    global current_ttb
+    
+    # Button to refresh current answer menu (so you don't have to come back to main menu).
+    refresh_button = InlineKeyboardButton('🔄 Обновить страницу', callback_data='refresh')
+    
+    # For notify function. Adds info to DB.
+    if check_user_notified(current_ttb, cid):
+        notify_text = u'🔕 Не уведомлять'
+    else:
+        notify_text = u'🔔 Уведомлять'
+    
+    # Button to put user id into db in order to notify him when the timetable is updated. 
+    notify_button = InlineKeyboardButton(notify_text, callback_data='notify')
+    
+ 
+    # Sends user back to the main menu.
+    back_button = InlineKeyboardButton('⬅️ Назад в меню', callback_data='main_menu')
 
-try:
-    token_file = open(tokens_dir + token_to_use) 
-except Exception:
-    # Write to log
-    logger.critical("no token file '" + tokens_dir + token_to_use + "', exit")
-    print("No token file \'" + token_to_use + "\'. You should put it into 'tokens/' dir. Exit.")
-    exit()
+    keyboard = [[refresh_button],
+                [notify_button],
+                  [back_button]]
+                  
+    return(InlineKeyboardMarkup(keyboard))
 
 
+# Keyboard for notification. Only one button to delete message.
+def notify_keyboard():
+    
+    del_notification_button = InlineKeyboardButton('Скрыть уведомление',  callback_data='delete_notification')
+    
+    keyboard = [[del_notification_button]]
+    
+    return(InlineKeyboardMarkup(keyboard))
+
+
+
+############################# Bot settings #############################
+
+def main():
+     
+    
+    if len(sys.argv) != 2:
+        print("Invalid arguments passed. Use '-r' option to run with release token, '-d' - to run with development token")
+        logger.critical("invalid arguments, exit")
+        sys.exit()
+    
+    if sys.argv[1] == "-r":
+        print("Started in release mode")
+        token_to_use = 'token.release'
+    elif sys.argv[1] == "-d":
+        print("Started in development mode")
+        token_to_use = 'token.dev'
+    else:
+        print("Invalid arguments passed. Use '-r' option to run with release token, '-d' - with development token")
+        logger.critical("invalid arguments, exit")
+        sys.exit()
         
-# Read token
-token_str = token_file.readline()[:-1] 
-token_file.close()
+        
+    try:
+        token_file = open(tokens_dir + token_to_use) 
+    except Exception:
+        # Write to log
+        logger.critical("no token file '" + tokens_dir + token_to_use + "', exit")
+        print("No token file \'" + token_to_use + "\'. You should put it into 'tokens/' dir. Exit.")
+        exit()
 
-updater = Updater(token_str)
-dp = updater.dispatcher
+    
+    # Create directories and files.
+    first_run_check()
+    # Write times to the db after the start 
+    # to prevent late notifications.
+    db_set_times_after_run()
+    
+        
+    # Read token
+    token_str = token_file.readline()[:-1] 
+    token_file.close()
 
-# Run ttb checks on on schedule (see check_updates_interval in 'static.py'
-job = updater.job_queue
-job.run_repeating(callback_minute, interval = check_updates_interval, first=0)
+    updater = Updater(token_str)
+    dp = updater.dispatcher
+
+    # Run ttb checks on on schedule (see check_updates_interval in 'static.py'
+    job = updater.job_queue
+    job.run_repeating(callback_minute, interval = check_updates_interval, first=0)
 
 
-# Handlers
-dp.add_handler(CommandHandler('start', start))
-dp.add_handler(CallbackQueryHandler(button_actions))
+    # Handlers
+    dp.add_handler(CommandHandler('start', start))
+    dp.add_handler(CallbackQueryHandler(button_actions))
 
 
-# Checking for updates.
-updater.start_polling(clean=True)
-# Stop bot if  <Ctrl + C> pressed.
-updater.idle()
+    # Checking for updates.
+    updater.start_polling(clean=True)
+    # Stop bot if  <Ctrl + C> is pressed.
+    updater.idle()
+
+    
+    
+if __name__ == "__main__":
+    main()
+
+
