@@ -33,9 +33,6 @@ current_ttb = None
 
 ######################## Logging settings ##############################
 
-
-
-
 # Uncomment this and see 'log/lftable-exceptions.log' if something goes wrong.
 #"""
 # Logger for all exceptions.
@@ -61,7 +58,6 @@ logger.addHandler(filehandler)
 
 # Write 'program started' message to log
 logger.info("the program was STARTED now")
-
 
 ########################################################################
 
@@ -561,11 +557,23 @@ def main():
             print("CRITICAL ERROR: can't create 'log/' directory. Exit")
             sys.exit()
     
-
-    # Use dev token
-    token_to_use = 'token.dev'
-    #token_to_use = 'token.release'
-
+    if len(sys.argv) != 2:
+        print("Invalid arguments passed. Use '-r' option to run with release token, '-d' - to run with development token")
+        logger.critical("invalid arguments, exit")
+        sys.exit()
+    
+    if sys.argv[1] == "-r":
+        print("Started in release mode")
+        token_to_use = 'token.release'
+    elif sys.argv[1] == "-d":
+        print("Started in development mode")
+        token_to_use = 'token.dev'
+    else:
+        print("Invalid arguments passed. Use '-r' option to run with release token, '-d' - with development token")
+        logger.critical("invalid arguments, exit")
+        sys.exit()
+        
+        
     try:
         token_file = open(tokens_dir + token_to_use) 
     except Exception:
@@ -603,8 +611,6 @@ def main():
     updater.start_polling(clean=True)
     # Stop bot if  <Ctrl + C> is pressed.
     updater.idle()
-
-    
 
     
     
