@@ -33,6 +33,15 @@ current_ttb = None
 
 ######################## Logging settings ##############################
 
+# Nothing will work without logging
+if not os.path.exists('log/'):
+    try:
+        os.mkdir('log/')
+    except Exception:
+        print("CRITICAL ERROR: can't create 'log/' directory. Exit")
+        sys.exit()
+
+
 # Uncomment this and see 'log/lftable-exceptions.log' if something goes wrong.
 #"""
 # Logger for all exceptions.
@@ -549,13 +558,6 @@ def notify_keyboard():
 
 def main():
      
-    # Nothing will work without logging
-    if not os.path.exists('log/'):
-        try:
-            os.mkdir('log/')
-        except Exception:
-            print("CRITICAL ERROR: can't create 'log/' directory. Exit")
-            sys.exit()
     
     if len(sys.argv) != 2:
         print("Invalid arguments passed. Use '-r' option to run with release token, '-d' - to run with development token")
