@@ -18,6 +18,8 @@ import sqlite3
 
 import time
 
+import ssl
+
 # See static.py to understant how it works.
 # This file contains app version, TTBS objects, their attributes, paths to databases and token files. 
 from static import *
@@ -74,7 +76,14 @@ logger.info("the program was STARTED now")
 # Get and return timetable's mtime using urllib module. 
 def ttb_gettime(ttb):
     
-    response =  urllib.request.urlopen(ttb.url, timeout=25)
+
+    # THIS IS A HOTFIX TO PREVENT "CERTIFICATE_VERIFY_FAILED" ERROR!
+    # DISABLE THIS LATER
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+
+    response =  urllib.request.urlopen(ttb.url, timeout=25, context=ctx)
     
     # Get date from HTTP header.
     native_date = ' '.join(dict(response.headers)['Last-Modified'].rsplit()[1:-1])

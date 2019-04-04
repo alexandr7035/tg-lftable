@@ -1,5 +1,5 @@
 # Version number
-lftable_version = '2.1'
+lftable_version = '2.1.1'
 
 # Logs
 log_dir = 'log/'
