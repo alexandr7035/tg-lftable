@@ -1,4 +1,5 @@
 lftable-venv
+tokens.py
 tokens
 *.pyc
 *.pyo
