@@ -345,7 +345,7 @@ def button_actions(bot, update):
 # Main menu text
 def main_menu_message():
   
-    menu_text = '<b>LFTable v' + lftable_version + '</b>: работа с расписанием занятий юридического факультета БГУ.\n\n'
+    menu_text = '<b>LFTable v' + lftable_version + '</b>: быстрый доступ к расписанию юридического факультета БГУ.\n\n'
     
     menu_text += 'Источник: https://law.bsu.by\n'
     menu_text += 'Информация об авторских правах юрфака: https://law.bsu.by/avtorskie-prava.html\n'
@@ -459,7 +459,7 @@ def callback_minute(bot, job):
             # Write to log
             logger.info("'" + checking_ttb.shortname + "' timetable was updated at " + update_time)
 
-            notification_text = '🔔 Появилось расписание <b>"' + checking_ttb.name + '". 🔔</b>\n'
+            notification_text = '🔔 Обновлено расписание <b>"' + checking_ttb.name + '". 🔔</b>\n'
             notification_text += 'Дата обновления: ' + dt_update_time.strftime('%d.%m.%Y') + '\n'
             notification_text += 'Время обновления: '+ dt_update_time.strftime('%H:%M') + '\n\n' 
             notification_text += '<b>Скачать</b>: ' + checking_ttb.url + "\n\n"
