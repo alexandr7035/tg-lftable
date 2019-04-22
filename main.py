@@ -573,25 +573,30 @@ def main():
         logger.critical("invalid arguments, exit")
         sys.exit()
     
+    # See token.py
     if sys.argv[1] == "-r":
         print("Started in release mode")
-        token_to_use = 'token.release'
+        try:
+            from tokens import release_token
+            token_str = release_token
+        except Exception:
+            logger.critical("no 'release_token' in tokens.py file, exit")
+            print("no 'release_token' in token.py, exit")
+        
     elif sys.argv[1] == "-d":
         print("Started in development mode")
-        token_to_use = 'token.dev'
+        try:
+            from tokens import dev_token
+            token_str = dev_token
+        except Exception:
+            logger.critical("no 'dev_token' in tokens.py file, exit")
+            print("no 'dev_token' in token.py, exit")
+   
     else:
         print("Invalid arguments passed. Use '-r' option to run with release token, '-d' - with development token")
         logger.critical("invalid arguments, exit")
         sys.exit()
         
-        
-    try:
-        token_file = open(tokens_dir + token_to_use) 
-    except Exception:
-        # Write to log
-        logger.critical("no token file '" + tokens_dir + token_to_use + "', exit")
-        print("No token file \'" + token_to_use + "\'. You should put it into 'tokens/' dir. Exit.")
-        exit()
 
     
     # Create directories and files.
@@ -601,11 +606,6 @@ def main():
     db_set_times_after_run()
     
         
-    # Read token
-    token_str = token_file.readline()[:-1] 
-    token_file.close()
-
-    updater = Updater(token_str)
     dp = updater.dispatcher
 
     # Run ttb checks on on schedule (see check_updates_interval in 'static.py'
