@@ -1,5 +1,5 @@
 # Version number
-lftable_version = '2.1.1'
+lftable_version = '2.2'
 
 # Logs
 log_dir = 'log/'
@@ -9,9 +9,6 @@ db_dir = 'db/'
 users_db = db_dir + 'notify_users.db'
 times_db = db_dir + 'times.db'
 statistics_db = db_dir + 'statistics.db'
-
-# Directory for the 'token.release' and 'token.dev' files
-tokens_dir = 'tokens/'
 
 
 # Intervals for update checks and notifications(s).
