@@ -255,13 +255,13 @@ def button_actions(bot, update):
     query = update.callback_query
     
     # The button pressed.
-    global current_callback
+    global callback
     # The user who pressed the button
     global user_id
     
     
     # To know which button was pressed.
-    current_callback = query.data
+    callback = query.data
     # To know chat id for notify action.
     user_id = query.message.chat_id
     
@@ -269,13 +269,13 @@ def button_actions(bot, update):
     send_statistics(user_id)
     
     
-    #print('Button pressed: ', current_callback)
+    #print('Button pressed: ', callback)
     # Write to log
-    logger.debug('user ' + str(user_id) + " pressed button '" + current_callback + "'")
+    logger.debug('user ' + str(user_id) + " pressed button '" + callback + "'")
     
 
     # Calls main menu.
-    if current_callback == 'main_menu':
+    if callback == 'main_menu':
 
         bot.edit_message_text(chat_id = query.message.chat_id,
                                 message_id = query.message.message_id,
@@ -286,11 +286,11 @@ def button_actions(bot, update):
                                 
     
     # Calls answer with certain timetable depending on the button pressed before.
-    if current_callback in  ['answer_p1', 'answer_p2', 'answer_p3', 'answer_p4', 
+    if callback in  ['answer_p1', 'answer_p2', 'answer_p3', 'answer_p4', 
                              'answer_m1', 'answer_m2',
                              'refresh', 'notify']:
         
-        if current_callback == 'notify':
+        if callback == 'notify':
             # Disable if user id is already in the db. Delete row from db.
             if check_user_notified(current_ttb, user_id):
                 conn = sqlite3.connect(users_db)
@@ -332,7 +332,7 @@ def button_actions(bot, update):
     
     
     # Deletes notification message.
-    if current_callback == 'delete_notification':
+    if callback == 'delete_notification':
         bot.delete_message(user_id, query.message.message_id)
         # Write to log
         logger.info('user ' + str(user_id) + " deleted notification (message: " + str(query.message.message_id) + ")")
@@ -349,24 +349,24 @@ def answer_message():
     global user_id
     global current_ttb
     
-    if current_callback == 'answer_p1':
+    if callback == 'answer_p1':
         current_ttb = pravo_c1
-    elif current_callback == 'answer_p2':
+    elif callback == 'answer_p2':
         current_ttb = pravo_c2
-    elif current_callback == 'answer_p3':
+    elif callback == 'answer_p3':
         current_ttb = pravo_c3
-    elif current_callback == 'answer_p4':
+    elif callback == 'answer_p4':
         current_ttb = pravo_c4
     
-    elif current_callback == 'answer_m1':
+    elif callback == 'answer_m1':
         current_ttb = mag_c1
-    elif current_callback == 'answer_m2':
+    elif callback == 'answer_m2':
         current_ttb = mag_c2
         
-    elif current_callback == 'refresh':
+    elif callback == 'refresh':
         current_ttb = old_ttb
     
-    elif current_callback == 'notify':
+    elif callback == 'notify':
         current_ttb = old_ttb
         
         
