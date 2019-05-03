@@ -325,7 +325,7 @@ def button_actions(bot, update):
         
         bot.edit_message_text(chat_id=query.message.chat_id,
                         message_id=query.message.message_id,
-                        text=answer_message(),
+                        text=ttb_message(),
                         # Used for bold font
                         parse_mode=ParseMode.HTML,
                         reply_markup=answer_keyboard(), timeout=25)
@@ -340,7 +340,7 @@ def button_actions(bot, update):
 
 # The message for a certain timetable.
 # The message text is formed in accordance with the timetable selected in the main menu.
-def answer_message():
+def ttb_message():
     
     # Used for refresh function
     global old_ttb
