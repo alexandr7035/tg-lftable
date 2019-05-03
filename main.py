@@ -11,7 +11,7 @@ import pytz
 import os
 import sys
 
-import random
+
 
 import logging
 import sqlite3
@@ -23,7 +23,7 @@ import ssl
 # See static.py to understant how it works.
 # This file contains app version, TTBS objects, their attributes, paths to databases and token files. 
 from static import *
-
+from messages import *
 
 # Global variables
 # Used for refresh function
@@ -339,32 +339,6 @@ def button_actions(bot, update):
         # Write to log
         logger.info('user ' + str(cid) + " deleted notification (message: " + str(query.message.message_id) + ")")
 
-
-############################# Bot messages' text #########################################
-
-# Main menu text
-def main_menu_message():
-  
-    menu_text = '<b>LFTable v' + lftable_version + '</b>: быстрый доступ к расписанию занятий юридического факультета БГУ.\n\n'
-    
-    menu_text += 'Источник: https://law.bsu.by\n'
-    menu_text += 'Информация об авторских правах юрфака: https://law.bsu.by/avtorskie-prava.html\n'
-    
-    # Use the string of random space symbols to fix badrequest error.
-    menu_text += u'\u2009'
-    for i in range(1,15):
-        if random.randint(0,1) == 1:
-            menu_text += '\u2009'
-            #menu_text += '1'
-        else:
-            #menu_text += '0'
-            menu_text += '\u0020'
-    menu_text += '\n'
-    
-    menu_text += 'Выберите нужное расписание:'
-
-    return(menu_text)
-    
 
 # The message for a certain timetable.
 # The message text is formed in accordance with the timetable selected in the main menu.
