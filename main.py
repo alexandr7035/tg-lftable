@@ -11,8 +11,6 @@ import pytz
 import os
 import sys
 
-
-
 import logging
 import sqlite3
 
@@ -259,21 +257,21 @@ def button_actions(bot, update):
     # The button pressed.
     global current_callback
     # The user who pressed the button
-    global cid
+    global user_id
     
     
     # To know which button was pressed.
     current_callback = query.data
     # To know chat id for notify action.
-    cid = query.message.chat_id
+    user_id = query.message.chat_id
     
     # If a new user joins the bot, this function writes his id to the 'statistics.db'
-    send_statistics(cid)
+    send_statistics(user_id)
     
     
     #print('Button pressed: ', current_callback)
     # Write to log
-    logger.debug('user ' + str(cid) + " pressed button '" + current_callback + "'")
+    logger.debug('user ' + str(user_id) + " pressed button '" + current_callback + "'")
     
 
     # Calls main menu.
@@ -294,11 +292,11 @@ def button_actions(bot, update):
         
         if current_callback == 'notify':
             # Disable if user id is already in the db. Delete row from db.
-            if check_user_notified(current_ttb, cid):
+            if check_user_notified(current_ttb, user_id):
                 conn = sqlite3.connect(users_db)
                 cursor = conn.cursor()
         
-                cursor.execute('DELETE FROM ' + current_ttb.shortname + ' WHERE (users = \'' + str(cid) + '\')')
+                cursor.execute('DELETE FROM ' + current_ttb.shortname + ' WHERE (users = \'' + str(user_id) + '\')')
                 result = cursor.fetchall()
             
                 # Save changes and close.
@@ -306,14 +304,14 @@ def button_actions(bot, update):
                 conn.close()
             
                 # Write to log
-                logger.info('user ' + str(cid) + " disabled notifications for the '" + current_ttb.shortname + "' timetable")
+                logger.info('user ' + str(user_id) + " disabled notifications for the '" + current_ttb.shortname + "' timetable")
                     
             # Enable notifying. Insert user id into db.
             else:
                 conn = sqlite3.connect(users_db)
                 cursor = conn.cursor()
         
-                cursor.execute('INSERT INTO ' + current_ttb.shortname + ' VALUES (\'' + str(cid) + '\')')
+                cursor.execute('INSERT INTO ' + current_ttb.shortname + ' VALUES (\'' + str(user_id) + '\')')
                 result = cursor.fetchall()
             
                 # Save changesa and close.
@@ -321,7 +319,7 @@ def button_actions(bot, update):
                 conn.close()
                 
                 # Write to log
-                logger.info('user ' + str(cid) + " enabled notifications for the '" + current_ttb.shortname + "' timetable")
+                logger.info('user ' + str(user_id) + " enabled notifications for the '" + current_ttb.shortname + "' timetable")
         
         
         
@@ -335,9 +333,9 @@ def button_actions(bot, update):
     
     # Deletes notification message.
     if current_callback == 'delete_notification':
-        bot.delete_message(cid, query.message.message_id)
+        bot.delete_message(user_id, query.message.message_id)
         # Write to log
-        logger.info('user ' + str(cid) + " deleted notification (message: " + str(query.message.message_id) + ")")
+        logger.info('user ' + str(user_id) + " deleted notification (message: " + str(query.message.message_id) + ")")
 
 
 # The message for a certain timetable.
@@ -348,7 +346,7 @@ def answer_message():
     global old_ttb
     
     # Used for notify function
-    global cid
+    global user_id
     global current_ttb
     
     if current_callback == 'answer_p1':
@@ -507,7 +505,7 @@ def answer_keyboard():
     refresh_button = InlineKeyboardButton('🔄 Обновить страницу', callback_data='refresh')
     
     # For notify function. Adds info to DB.
-    if check_user_notified(current_ttb, cid):
+    if check_user_notified(current_ttb, user_id):
         notify_text = u'🔕 Не уведомлять'
     else:
         notify_text = u'🔔 Уведомлять'
