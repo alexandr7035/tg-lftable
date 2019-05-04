@@ -22,13 +22,7 @@ import ssl
 # This file contains app version, TTBS objects, their attributes, paths to databases and token files. 
 from static import *
 from messages import *
-
-# Global variables
-# Used for refresh function
-old_ttb = None
-# Used for notify function
-notify_status = None
-current_ttb = None
+from ttb_gettime import *
 
 
 ######################## Logging settings ##############################
@@ -67,35 +61,6 @@ logger.addHandler(filehandler)
 
 # Write 'program started' message to log
 logger.info("the program was STARTED now")
-
-########################################################################
-
-# The most important function of the program.
-# Get and return timetable's mtime using urllib module. 
-def ttb_gettime(ttb):
-    
-
-    # THIS IS A HOTFIX TO PREVENT "CERTIFICATE_VERIFY_FAILED" ERROR!
-    # DISABLE THIS LATER
-    ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
-
-    response =  urllib.request.urlopen(ttb.url, timeout=25, context=ctx)
-    
-    # Get date from HTTP header.
-    native_date = ' '.join(dict(response.headers)['Last-Modified'].rsplit()[1:-1])
-    
-    # Transfer date to normal format.
-    gmt_date = datetime.strptime(native_date, '%d %b %Y %H:%M:%S')
-    
-    # Transfer date to our timezone (GMT+3).
-    old_tz = pytz.timezone('Europe/London')
-    new_tz = pytz.timezone('Europe/Minsk')
-    
-    date = old_tz.localize(gmt_date).astimezone(new_tz) 
-    
-    return(date)
 
 
 ########################################################################
@@ -252,29 +217,23 @@ def start(bot, update):
    
 # Bot's behavior depending on the button pressed.
 def button_actions(bot, update):
+
+
     query = update.callback_query
-    
-    # The button pressed.
-    global callback
-    # The user who pressed the button
-    global user_id
-    
     
     # To know which button was pressed.
     callback = query.data
-    # To know chat id for notify action.
+    # The user who pressed the button
     user_id = query.message.chat_id
     
     # If a new user joins the bot, this function writes his id to the 'statistics.db'
     send_statistics(user_id)
     
-    
-    #print('Button pressed: ', callback)
     # Write to log
     logger.debug('user ' + str(user_id) + " pressed button '" + callback + "'")
     
 
-    # Calls main menu.
+    # Sends main menu.
     if callback == 'main_menu':
 
         bot.edit_message_text(chat_id = query.message.chat_id,
@@ -285,120 +244,85 @@ def button_actions(bot, update):
                                 reply_markup=main_menu_keyboard(), timeout=25)
                                 
     
-    # Calls answer with certain timetable depending on the button pressed before.
+    # Sends message with certain timetable info depending on the button pressed before.
     if callback in  ['answer_p1', 'answer_p2', 'answer_p3', 'answer_p4', 
                              'answer_m1', 'answer_m2',
                              'refresh', 'notify']:
         
-        if callback == 'notify':
-            # Disable if user id is already in the db. Delete row from db.
-            if check_user_notified(current_ttb, user_id):
-                conn = sqlite3.connect(users_db)
-                cursor = conn.cursor()
+        if callback == 'answer_p1':
+            current_ttb = pravo_c1
+        elif callback == 'answer_p2':
+            current_ttb = pravo_c2
+        elif callback == 'answer_p3':
+            current_ttb = pravo_c3
+        elif callback == 'answer_p4':
+            current_ttb = pravo_c4
+    
+        elif callback == 'answer_m1':
+            current_ttb = mag_c1
+        elif callback == 'answer_m2':
+            current_ttb = mag_c2
         
-                cursor.execute('DELETE FROM ' + current_ttb.shortname + ' WHERE (users = \'' + str(user_id) + '\')')
-                result = cursor.fetchall()
+        elif callback in ['refresh', 'notify']:
+
+            # Detect the timetable checking first line of the ttb message
+            message = query.message
+            for ttb in all_timetables:
+
+                if message.text.split('\n')[0] == ttb.name:
+                    current_ttb = ttb
+
             
-                # Save changes and close.
-                conn.commit()
-                conn.close()
+            if callback == 'notify':
+
+                # Disable if user id is already in the dbs. Delete row from db.
+                if check_user_notified(current_ttb, user_id):
+                    conn = sqlite3.connect(users_db)
+                    cursor = conn.cursor()
+        
+                    cursor.execute('DELETE FROM ' + current_ttb.shortname + ' WHERE (users = \'' + str(user_id) + '\')')
+                    result = cursor.fetchall()
             
-                # Write to log
-                logger.info('user ' + str(user_id) + " disabled notifications for the '" + current_ttb.shortname + "' timetable")
+                    # Save changes and close.
+                    conn.commit()
+                    conn.close()
+            
+                    # Write to log
+                    logger.info('user ' + str(user_id) + " disabled notifications for the '" + current_ttb.shortname + "' timetable")
                     
-            # Enable notifying. Insert user id into db.
-            else:
-                conn = sqlite3.connect(users_db)
-                cursor = conn.cursor()
+                # Enable notifying. Insert user id into db.
+                else:
+                    conn = sqlite3.connect(users_db)
+                    cursor = conn.cursor()
         
-                cursor.execute('INSERT INTO ' + current_ttb.shortname + ' VALUES (\'' + str(user_id) + '\')')
-                result = cursor.fetchall()
+                    cursor.execute('INSERT INTO ' + current_ttb.shortname + ' VALUES (\'' + str(user_id) + '\')')
+                    result = cursor.fetchall()
             
-                # Save changesa and close.
-                conn.commit()
-                conn.close()
+                    # Save changesa and close.
+                    conn.commit()
+                    conn.close()
                 
-                # Write to log
-                logger.info('user ' + str(user_id) + " enabled notifications for the '" + current_ttb.shortname + "' timetable")
+                    # Write to log
+                    logger.info('user ' + str(user_id) + " enabled notifications for the '" + current_ttb.shortname + "' timetable")
+
         
         
-        
+        # Edit message depending on the callback
         bot.edit_message_text(chat_id=query.message.chat_id,
                         message_id=query.message.message_id,
-                        text=ttb_message(),
+                        text=ttb_message(current_ttb),
                         # Used for bold font
                         parse_mode=ParseMode.HTML,
-                        reply_markup=answer_keyboard(), timeout=25)
-    
+                        reply_markup=answer_keyboard(current_ttb, user_id), timeout=25)
+
     
     # Deletes notification message.
     if callback == 'delete_notification':
         bot.delete_message(user_id, query.message.message_id)
         # Write to log
         logger.info('user ' + str(user_id) + " deleted notification (message: " + str(query.message.message_id) + ")")
+    
 
-
-# The message for a certain timetable.
-# The message text is formed in accordance with the timetable selected in the main menu.
-def ttb_message():
-    
-    # Used for refresh function
-    global old_ttb
-    
-    # Used for notify function
-    global user_id
-    global current_ttb
-    
-    if callback == 'answer_p1':
-        current_ttb = pravo_c1
-    elif callback == 'answer_p2':
-        current_ttb = pravo_c2
-    elif callback == 'answer_p3':
-        current_ttb = pravo_c3
-    elif callback == 'answer_p4':
-        current_ttb = pravo_c4
-    
-    elif callback == 'answer_m1':
-        current_ttb = mag_c1
-    elif callback == 'answer_m2':
-        current_ttb = mag_c2
-        
-    elif callback == 'refresh':
-        current_ttb = old_ttb
-    
-    elif callback == 'notify':
-        current_ttb = old_ttb
-        
-        
-        
-    # Get the timetable's "mtime"
-    ttb_datetime = ttb_gettime(current_ttb)
-    
-    
-    # Change date to necessary format.
-    update_time = ttb_datetime.strftime('%H:%M')
-    update_date = ttb_datetime.strftime('%d.%m.%Y')
-    
-    
-    # Form the message's text
-    answer_text = '<b>' + current_ttb.name + '</b>\n\n'
-    
-    answer_text += 'Дата обновления: ' + update_date + '\n'
-    answer_text += 'Время обновления: '+ update_time + '\n\n'
-
-    answer_text += '<b>Скачать</b>: ' + current_ttb.url + "\n\n"
-    
-    # To fix badrequest error.
-    answer_text += '-------------------\n'
-    answer_text += 'Страница обновлена: ' + datetime.now().strftime("%d.%m.%Y %H:%M:%S")
-
-    
-    # For 'refresh' function.
-    old_ttb = current_ttb
-    
-    # Return this text
-    return(answer_text)
-    
 
 # Notification message. 
 def callback_minute(bot, job):
@@ -496,10 +420,8 @@ def main_menu_keyboard():
 
 
 # Menu for specific timetable. One button returns to main menu, one refreshes date and time info.
-def answer_keyboard():
+def answer_keyboard(current_ttb, user_id):
     
-    # Used for notify button.
-    global current_ttb
     
     # Button to refresh current answer menu (so you don't have to come back to main menu).
     refresh_button = InlineKeyboardButton('🔄 Обновить страницу', callback_data='refresh')
