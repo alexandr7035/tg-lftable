@@ -325,7 +325,7 @@ def button_actions(bot, update):
 
 
 # Notification message. 
-def callback_minute(bot, job):
+def notifications_timejob(bot, job):
     
     conn_times_db = sqlite3.connect(times_db)
     cursor_times_db = conn_times_db.cursor()
@@ -447,7 +447,7 @@ def main():
 
     # Run ttb checks on on schedule (see check_updates_interval in 'static.py'
     job = updater.job_queue
-    job.run_repeating(callback_minute, interval = check_updates_interval, first=0)
+    job.run_repeating(notifications_timejob, interval = check_updates_interval, first=0)
 
 
     # Handlers
