@@ -6,7 +6,7 @@ log_dir = 'log/'
 
 # Databases.
 db_dir = 'db/'
-users_db = db_dir + 'notify_users.db'
+notifications_db = db_dir + 'notifications.db'
 times_db = db_dir + 'times.db'
 statistics_db = db_dir + 'statistics.db'
 

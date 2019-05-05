@@ -57,12 +57,12 @@ def first_run_check():
  
     # Create database for users notified about timetables' updates.
     # 4 tables for each timetable, each with 'users' column
-    if not os.path.exists(users_db):
-        conn = sqlite3.connect(users_db)
+    if not os.path.exists(notifications_db):
+        conn = sqlite3.connect(notifications_db)
         cursor = conn.cursor()   
         
         # Write to log
-        logger.info("'" + users_db + "' database was created")
+        logger.info("'" + notifications_db + "' database was created")
         
         for timetable in all_timetables:
             cursor.execute('CREATE TABLE ' + timetable.shortname + ' (users)')
@@ -152,7 +152,7 @@ def send_statistics(user_id):
 def check_user_notified(ttb, user_id):
     
     # Connect to users db.
-    conn = sqlite3.connect(users_db)
+    conn = sqlite3.connect(notifications_db)
     cursor = conn.cursor()
         
     cursor.execute('SELECT users FROM ' + ttb.shortname)

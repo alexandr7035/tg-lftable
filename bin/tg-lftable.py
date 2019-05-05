@@ -130,7 +130,7 @@ def button_actions(bot, update):
 
                 # Disable if user id is already in the dbs. Delete row from db.
                 if check_user_notified(current_ttb, user_id):
-                    conn = sqlite3.connect(users_db)
+                    conn = sqlite3.connect(notifications_db)
                     cursor = conn.cursor()
         
                     cursor.execute('DELETE FROM ' + current_ttb.shortname + ' WHERE (users = \'' + str(user_id) + '\')')
@@ -145,7 +145,7 @@ def button_actions(bot, update):
                     
                 # Enable notifying. Insert user id into db.
                 else:
-                    conn = sqlite3.connect(users_db)
+                    conn = sqlite3.connect(notifications_db)
                     cursor = conn.cursor()
         
                     cursor.execute('INSERT INTO ' + current_ttb.shortname + ' VALUES (\'' + str(user_id) + '\')')
@@ -210,13 +210,13 @@ def notifications_timejob(bot, job):
 
             
             # Connect to users db.
-            conn_users_db = sqlite3.connect(users_db)
-            cursor_users_db = conn_users_db.cursor()
+            conn_notifications_db = sqlite3.connect(notifications_db)
+            cursor_notifications_db = conn_notifications_db.cursor()
         
-            cursor_users_db.execute('SELECT users FROM ' + checking_ttb.shortname)
-            result = cursor_users_db.fetchall()
+            cursor_notifications_db.execute('SELECT users FROM ' + checking_ttb.shortname)
+            result = cursor_notifications_db.fetchall()
 
-            conn_users_db.close()
+            conn_notifications_db.close()
     
             # List for users notifed about current timetable updates.
             users_to_notify = []
