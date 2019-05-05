@@ -76,22 +76,22 @@ def button_actions(bot, update):
 
 
     # Sends message with certain timetable info depending on the button pressed before.
-    if callback in  ['answer_p1', 'answer_p2', 'answer_p3', 'answer_p4',
-                             'answer_m1', 'answer_m2',
+    if callback in  ['pravo_c1', 'pravo_c2', 'pravo_c3', 'pravo_c4',
+                             'mag_c1', 'mag_c2',
                              'refresh', 'notify']:
 
         # If any of TTB buttons is pressed
-        if callback == 'answer_p1':
+        if callback == 'pravo_c1':
             current_ttb = pravo_c1
-        elif callback == 'answer_p2':
+        elif callback == 'pravo_c2':
             current_ttb = pravo_c2
-        elif callback == 'answer_p3':
+        elif callback == 'pravo_c3':
             current_ttb = pravo_c3
-        elif callback == 'answer_p4':
+        elif callback == 'pravo_c4':
             current_ttb = pravo_c4
-        elif callback == 'answer_m1':
+        elif callback == 'mag_c1':
             current_ttb = mag_c1
-        elif callback == 'answer_m2':
+        elif callback == 'mag_c2':
             current_ttb = mag_c2
 
 

@@ -6,13 +6,13 @@ from backend import check_user_notified
 # 4 buttons in main menu. Each button is designed for the corresponding timetable (1-4 course)
 def main_menu_keyboard():
 
-    pravo_c1.btn = InlineKeyboardButton('Правоведение - 1⃣', callback_data='answer_p1')
-    pravo_c2.btn = InlineKeyboardButton('Правоведение - 2⃣', callback_data='answer_p2')
-    pravo_c3.btn = InlineKeyboardButton('Правоведение - 3⃣', callback_data='answer_p3')
-    pravo_c4.btn = InlineKeyboardButton('Правоведение - 4⃣', callback_data='answer_p4')
+    pravo_c1.btn = InlineKeyboardButton('Правоведение - 1⃣', callback_data=pravo_c1.shortname)
+    pravo_c2.btn = InlineKeyboardButton('Правоведение - 2⃣', callback_data=pravo_c2.shortname)
+    pravo_c3.btn = InlineKeyboardButton('Правоведение - 3⃣', callback_data=pravo_c3.shortname)
+    pravo_c4.btn = InlineKeyboardButton('Правоведение - 4⃣', callback_data=pravo_c4.shortname)
 
-    mag_c1.btn = InlineKeyboardButton('Магистратура - 1⃣', callback_data='answer_m1')
-    mag_c2.btn = InlineKeyboardButton('Магистратура - 2⃣', callback_data='answer_m2')
+    mag_c1.btn = InlineKeyboardButton('Магистратура - 1⃣', callback_data=mag_c1.shortname)
+    mag_c2.btn = InlineKeyboardButton('Магистратура - 2⃣', callback_data=mag_c2.shortname)
 
     keyboard = [[pravo_c1.btn, pravo_c2.btn],
                 [pravo_c3.btn, pravo_c4.btn],
