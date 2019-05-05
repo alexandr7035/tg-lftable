@@ -1,4 +1,10 @@
-#!./lftable-venv/bin/python3 -B
+#!/usr/bin/env python3
+
+import os
+import sys
+# Add directory with local modules to path
+sys.path.append('src')
+
 from telegram.ext import Updater
 from telegram.ext import CommandHandler, CallbackQueryHandler, JobQueue
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
@@ -8,8 +14,6 @@ import urllib.request
 from datetime import datetime
 
 import pytz
-import os
-import sys
 
 import logging
 import sqlite3
@@ -23,7 +27,7 @@ from static import *
 from messages import *
 from backend import *
 from keyboards import *
-
+from logger import *
 
 ######################## Logging settings ##############################
 
@@ -48,21 +52,10 @@ def my_handler(type, value, tb):
 sys.excepthook = my_handler
 #"""
 
-# A simple logger
-#logging_filename = log_dir + 'lftable-' + datetime.now().strftime('%Y%m%d-%H%M%S') + '.log'
-logging_filename = log_dir + 'lftable.log'
 
-logger = logging.getLogger('lftable')
-logger.setLevel(logging.DEBUG)
-
-filehandler = logging.FileHandler(filename=logging_filename)
-filehandler.setFormatter(logging.Formatter('%(filename)s [LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s'))
-logger.addHandler(filehandler)
 
 # Write 'program started' message to log
 logger.info("the program was STARTED now")
-
-
 
 
 
@@ -186,7 +179,7 @@ def button_actions(bot, update):
 
 # Notification message. 
 def notifications_timejob(bot, job):
-    
+	
     conn_times_db = sqlite3.connect(times_db)
     cursor_times_db = conn_times_db.cursor()
     
@@ -308,8 +301,8 @@ def main():
     # Run ttb checks on on schedule (see check_updates_interval in 'static.py'
     job = updater.job_queue
     job.run_repeating(notifications_timejob, interval = check_updates_interval, first=0)
-
-
+    
+    
     # Handlers
     dp.add_handler(CommandHandler('start', start))
     dp.add_handler(CallbackQueryHandler(button_actions))

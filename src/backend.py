@@ -7,6 +7,7 @@ from datetime import datetime
 
 import pytz
 import ssl
+from logger import *
 
 # The most important function of the program.
 # Get and return timetable's mtime using urllib module. 
