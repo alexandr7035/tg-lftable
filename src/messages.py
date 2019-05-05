@@ -53,3 +53,13 @@ def ttb_message(ttb):
     
     # Return this text
     return(text)
+
+
+# update_time must be a datetime object
+def notification_message(ttb, update_time):
+    text = '🔔 Обновлено расписание <b>"' + ttb.name + '". 🔔</b>\n'
+    text += 'Дата обновления: ' + update_time.strftime('%d.%m.%Y') + '\n'
+    text += 'Время обновления: '+ update_time.strftime('%H:%M') + '\n\n' 
+    text += '<b>Скачать</b>: ' + ttb.url + "\n\n"
+    
+    return (text)

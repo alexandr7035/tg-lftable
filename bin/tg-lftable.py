@@ -208,10 +208,6 @@ def notifications_timejob(bot, job):
             # Write to log
             logger.info("'" + checking_ttb.shortname + "' timetable was updated at " + update_time)
 
-            notification_text = '🔔 Обновлено расписание <b>"' + checking_ttb.name + '". 🔔</b>\n'
-            notification_text += 'Дата обновления: ' + dt_update_time.strftime('%d.%m.%Y') + '\n'
-            notification_text += 'Время обновления: '+ dt_update_time.strftime('%H:%M') + '\n\n' 
-            notification_text += '<b>Скачать</b>: ' + checking_ttb.url + "\n\n"
             
             # Connect to users db.
             conn_users_db = sqlite3.connect(users_db)
@@ -232,7 +228,7 @@ def notifications_timejob(bot, job):
             
             # Send notifications to users.
             for user_id in users_to_notify:
-                bot.send_message(chat_id=user_id, text=notification_text, reply_markup=notify_keyboard(), parse_mode=ParseMode.HTML)
+                bot.send_message(chat_id=user_id, text=notification_message(checking_ttb, dt_update_time), reply_markup=notify_keyboard(), parse_mode=ParseMode.HTML)
                 
                 # Write to log
                 logger.info("'" + checking_ttb.shortname + "' notification was sent to user " + str(user_id))
