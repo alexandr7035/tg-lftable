@@ -1,0 +1,13 @@
+version: '3'
+services:
+    tg-lftable:
+        image: tg-lftable
+       
+        # To store logs and databases    
+        volumes:
+            - ./log:/tg-lftable/log
+            - ./db:/tg-lftable/db
+        build:
+            context: .
+            dockerfile: Dockerfile
+    
