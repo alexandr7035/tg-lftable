@@ -26,7 +26,7 @@ from logger import *
 
 ######################## Exceptions logger #############################
 # Uncomment this and see 'log/lftable-exceptions.log' if something goes wrong.
-"""
+
 # Logger for all exceptions.
 logging.basicConfig(filename=log_dir + "lftable-exceptions.log", level=logging.DEBUG)
 exception_logger = logging.getLogger('exception_logger')
@@ -35,7 +35,7 @@ exception_logger = logging.getLogger('exception_logger')
 def my_handler(type, value, tb):
     exception_logger.exception("Uncaught exception: {0}".format(str(value)))
 sys.excepthook = my_handler
-"""
+
 ########################################################################
 
 
@@ -207,7 +207,13 @@ def notifications_timejob(bot, job):
 
             # Send a notification to each user.
             for user_id in users_to_notify:
-                bot.send_message(chat_id=user_id, text=notification_message(checking_ttb, dt_update_time), reply_markup=notify_keyboard(), parse_mode=ParseMode.HTML)
+
+                try:
+                    bot.send_message(chat_id=user_id, text=notification_message(checking_ttb, dt_update_time), reply_markup=notify_keyboard(), parse_mode=ParseMode.HTML)
+                except Exception as e:
+                    # Write to log
+                    logger.info("can't send '" + checking_ttb.shortname + "' notification to user " + str(user_id) + ", skip")
+                    continue
 
                 # Write to log
                 logger.info("'" + checking_ttb.shortname + "' notification was sent to user " + str(user_id))
