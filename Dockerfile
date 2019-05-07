@@ -18,4 +18,5 @@ RUN pip install -r requirements.txt
 COPY . .
 
 # Run the app
-CMD ["python3", "-B", "-u", "bin/tg-lftable.py", "-d"]
+#CMD ["python3", "-B", "-u", "bin/tg-lftable.py", "-r"]
+ENTRYPOINT ["python3", "-B", "-u", "bin/tg-lftable.py"]

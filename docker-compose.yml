@@ -1,13 +1,17 @@
+# docker-compose.yml to run a release version
+# # docker-compose build
+# # docker-compose up
 version: '3'
 services:
     tg-lftable:
         image: tg-lftable
-       
-        # To store logs and databases    
+
+        # To store logs and databases
         volumes:
             - ./log:/tg-lftable/log
             - ./db:/tg-lftable/db
         build:
             context: .
             dockerfile: Dockerfile
-    
+        # An argument to python script
+        command: -r

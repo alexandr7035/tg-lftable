@@ -1,0 +1,17 @@
+# docker-compose.yml to run a dev version
+# # docker-compose -f docker-compose-dev.yml build
+# # docker-compose -f docker-compose-dev.yml up
+version: '3'
+services:
+    tg-lftable-dev:
+        image: tg-lftable-dev
+       
+        # To store logs and databases    
+        volumes:
+            - ./log:/tg-lftable/log
+            - ./db:/tg-lftable/db
+        build:
+            context: .
+            dockerfile: Dockerfile
+        # An argument to python script
+        command: -d   
