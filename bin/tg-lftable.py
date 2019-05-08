@@ -231,6 +231,10 @@ def main():
     # Write 'program started' message to log
     logger.info("the program was STARTED now")
 
+    if not os.path.isfile(tokens_file):
+        print('No tokens file ' + tokens_file + '. Exit.')
+        sys.exit()
+
     # Parse arguments
     # Cant start in both dev and release regimes
     if "-r" in sys.argv and "-d" in sys.argv:

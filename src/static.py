@@ -1,6 +1,9 @@
 # Version number
 lftable_version = '2.2'
 
+# Python module with tokens
+tokens_file = 'src/tokens.py'
+
 # Logs
 log_dir = 'log/'
 
