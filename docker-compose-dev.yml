@@ -5,13 +5,14 @@ version: '3'
 services:
     tg-lftable-dev:
         image: tg-lftable-dev
-       
-        # To store logs and databases    
+
+        # To store logs and databases
         volumes:
             - ./log:/tg-lftable/log
             - ./db:/tg-lftable/db
         build:
             context: .
             dockerfile: Dockerfile
-        # An argument to python script
+        # Arguments to python script
+        # Exceptions logging is enabled
         command: -d -e

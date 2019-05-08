@@ -13,13 +13,13 @@ from logger import *
 # Get and return timetable's mtime using urllib module.
 def ttb_gettime(ttb):
 
-
     # THIS IS A HOTFIX TO PREVENT "CERTIFICATE_VERIFY_FAILED" ERROR!
     # DISABLE THIS LATER
     ctx = ssl.create_default_context()
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
 
+    # Request
     response =  urllib.request.urlopen(ttb.url, timeout=25, context=ctx)
 
     # Get date from HTTP header.
@@ -149,7 +149,6 @@ def send_statistics(user_id):
 
 
 # Checks if user is notified when timetable is updated.
-# Used to set text on the "notify" button.
 def check_user_notified(ttb, user_id):
 
     # Connect to users db.

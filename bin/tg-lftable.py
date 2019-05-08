@@ -230,14 +230,14 @@ def main():
 
     # Write 'program started' message to log
     logger.info("the program was STARTED now")
-    
+
     # Parse arguments
     # Cant start in both dev and release regimes
     if "-r" in sys.argv and "-d" in sys.argv:
         print("Invalid arguments passed. Use '-r' option to run with release token, '-d' - with development token")
         logger.critical("invalid arguments, exit")
         sys.exit()
-     
+
     # Start woth release token
     if '-r' in sys.argv:
         print("Started in release mode")
@@ -249,8 +249,8 @@ def main():
             logger.critical("no 'release_token' in tokens.py file, exit")
             print("no 'release_token' in token.py, exit")
             sys.exit()
-            
-    # Start with dev token        
+
+    # Start with dev token
     if "-d" in sys.argv:
         print("Started in development mode")
         try:
@@ -261,12 +261,12 @@ def main():
             logger.critical("no 'dev_token' in tokens.py file, exit")
             print("no 'dev_token' in token.py, exit")
             sys.exit()
-    
+
     # Log exception
     if '-e' in sys.argv:
         log_exceptions()
-    
-    # Create directories and files if there if no
+
+    # Create necessary directories and files if don't already exist
     # See 'src/backend.py' file
     first_run_check()
     # Write times to the db after the start  to prevent late notifications.
@@ -293,5 +293,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
