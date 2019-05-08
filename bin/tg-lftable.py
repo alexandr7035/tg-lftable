@@ -22,21 +22,12 @@ from static import *
 from messages import *
 from backend import *
 from keyboards import *
+
+# Writes logging messages to lftable.log file.
+# To log all exception you should start the program with '-e'option.
+# Exception logger generates a bulk otuput, so the log file (lftable-exceptions.log) may become exctremely large
+# That's why this logger is disabled by default
 from logger import *
-
-######################## Exceptions logger #############################
-# Uncomment this and see 'log/lftable-exceptions.log' if something goes wrong.
-
-# Logger for all exceptions.
-logging.basicConfig(filename=log_dir + "lftable-exceptions.log", level=logging.DEBUG)
-exception_logger = logging.getLogger('exception_logger')
-
-# Install exception handler
-def my_handler(type, value, tb):
-    exception_logger.exception("Uncaught exception: {0}".format(str(value)))
-sys.excepthook = my_handler
-
-########################################################################
 
 
 # /start command --> calls main menu.
@@ -140,7 +131,7 @@ def button_actions(bot, update):
 
 
 
-        # Edit message depending on the callback
+        # Edit message depending on the callback and current ttb variable
         bot.edit_message_text(chat_id=query.message.chat_id,
                         message_id=query.message.message_id,
                         text=ttb_message(current_ttb),
@@ -239,15 +230,16 @@ def main():
 
     # Write 'program started' message to log
     logger.info("the program was STARTED now")
-
+    
     # Parse arguments
-    if len(sys.argv) != 2:
-        print("Invalid arguments passed. Use '-r' option to run with release token, '-d' - to run with development token")
+    # Cant start in both dev and release regimes
+    if "-r" in sys.argv and "-d" in sys.argv:
+        print("Invalid arguments passed. Use '-r' option to run with release token, '-d' - with development token")
         logger.critical("invalid arguments, exit")
         sys.exit()
-
-
-    if sys.argv[1] == "-r":
+     
+    # Start woth release token
+    if '-r' in sys.argv:
         print("Started in release mode")
         try:
             # See src/tokens.py file
@@ -256,8 +248,10 @@ def main():
         except Exception:
             logger.critical("no 'release_token' in tokens.py file, exit")
             print("no 'release_token' in token.py, exit")
-
-    elif sys.argv[1] == "-d":
+            sys.exit()
+            
+    # Start with dev token        
+    if "-d" in sys.argv:
         print("Started in development mode")
         try:
             # See src/tokens.py file
@@ -266,14 +260,12 @@ def main():
         except Exception:
             logger.critical("no 'dev_token' in tokens.py file, exit")
             print("no 'dev_token' in token.py, exit")
-
-    else:
-        print("Invalid arguments passed. Use '-r' option to run with release token, '-d' - with development token")
-        logger.critical("invalid arguments, exit")
-        sys.exit()
-
-
-
+            sys.exit()
+    
+    # Log exception
+    if '-e' in sys.argv:
+        log_exceptions()
+    
     # Create directories and files if there if no
     # See 'src/backend.py' file
     first_run_check()

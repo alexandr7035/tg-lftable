@@ -14,4 +14,4 @@ services:
             context: .
             dockerfile: Dockerfile
         # An argument to python script
-        command: -d   
+        command: -d -e
