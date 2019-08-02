@@ -1,7 +1,7 @@
-from static import *
+from src.static import *
 import random
 from datetime import datetime
-from backend import ttb_gettime
+from src.backend import ttb_gettime
 
 # Main menu text
 def main_menu_message():

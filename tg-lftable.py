@@ -3,8 +3,6 @@
 import os
 import sys
 import argparse
-# Add src/' directory with local modules to path
-sys.path.append('src')
 
 from telegram.ext import Updater
 from telegram.ext import CommandHandler, CallbackQueryHandler, JobQueue
@@ -19,16 +17,16 @@ import sqlite3
 import time
 
 # Import all local modules, see 'src/' directory to understand how everythong works
-from static import *
-from messages import *
-from backend import *
-from keyboards import *
+from src.static import *
+from src.messages import *
+from src.backend import *
+from src.keyboards import *
 
 # Writes logging messages to lftable.log file.
 # To log all exception you should start the program with '--log-exceptions' option.
 # Exception logger generates a bulk otuput, so the log file (lftable-exceptions.log) may become exctremely large
 # That's why this logger is disabled by default
-from logger import *
+from src.logger import *
 
 
 # /start command --> calls main menu.
@@ -233,7 +231,7 @@ def main():
     logger.info("the program was STARTED now")
 
     try:
-        import tokens
+        import src.tokens
     except ImportError:
         print('No tokens file ' + tokens_file + '. Exit.')
         logger.critical("can't import 'tokens.py', exit.")
@@ -265,7 +263,7 @@ def main():
     # set token_str depending on --mode parameter
     try:
         # see tokens.py module
-        token_str = getattr(tokens, args.mode)
+        token_str = getattr(src.tokens, args.mode)
     except AttributeError:
         logger.critical("no '" + args.mode + "' token string variable in tokens.py file, exit")
         print("no '" + args.mode + "' token string variable in tokens.py file, exit")

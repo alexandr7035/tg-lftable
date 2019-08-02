@@ -1,4 +1,4 @@
-from static import *
+from src.static import *
 import os
 import sqlite3
 
@@ -7,7 +7,7 @@ from datetime import datetime
 
 import pytz
 import ssl
-from logger import *
+from src.logger import *
 
 # The most important function of the program.
 # Get and return timetable's mtime using urllib module.

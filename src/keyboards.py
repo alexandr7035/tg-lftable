@@ -1,6 +1,6 @@
-from static import *
+from src.static import *
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from backend import check_user_notified
+from src.backend import check_user_notified
 
 # Main menu keyboard.
 # 4 buttons in main menu. Each button is designed for the corresponding timetable (1-4 course)

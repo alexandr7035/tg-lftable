@@ -1,6 +1,6 @@
 import logging
 import os
-from static import log_dir
+from src.static import log_dir
 import sys
 
 # Nothing will work without logging
