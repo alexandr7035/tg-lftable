@@ -2,6 +2,7 @@
 
 import os
 import sys
+import argparse
 # Add src/' directory with local modules to path
 sys.path.append('src')
 
@@ -24,7 +25,7 @@ from backend import *
 from keyboards import *
 
 # Writes logging messages to lftable.log file.
-# To log all exception you should start the program with '-e'option.
+# To log all exception you should start the program with '--log-exceptions' option.
 # Exception logger generates a bulk otuput, so the log file (lftable-exceptions.log) may become exctremely large
 # That's why this logger is disabled by default
 from logger import *
@@ -231,43 +232,46 @@ def main():
     # Write 'program started' message to log
     logger.info("the program was STARTED now")
 
-    if not os.path.isfile(tokens_file):
+    try:
+        import tokens
+    except ImportError:
         print('No tokens file ' + tokens_file + '. Exit.')
+        logger.critical("can't import 'tokens.py', exit.")
         sys.exit()
 
-    # Parse arguments
-    # Cant start in both dev and release regimes
-    if "-r" in sys.argv and "-d" in sys.argv:
-        print("Invalid arguments passed. Use '-r' option to run with release token, '-d' - with development token")
-        logger.critical("invalid arguments, exit")
+    # Parse command-line arguments
+    parser = argparse.ArgumentParser(description="tg-lftable: telegram bot which provides an easy way to get the law faculty's timetable (BSU).")
+
+    parser.add_argument('--log-exceptions', action='store_true')
+
+    required_arg = parser.add_argument_group(title='required arguments')
+    required_arg.add_argument('--mode',
+                        type=str,
+                        help='Either \'release\' or \'development\' string. The bot starts with the corresponding token',
+                        required=True)
+
+    args = parser.parse_args()
+
+    if args.mode == 'release':
+        print("Started in 'release' mode")
+
+    elif args.mode == 'develop':
+        print("Started in 'develop' mode")
+
+    else:
+        print("Invalid mode specified. Use either 'release' or 'develop' string.' Exit.")
         sys.exit()
 
-    # Start woth release token
-    if '-r' in sys.argv:
-        print("Started in release mode")
-        try:
-            # See src/tokens.py file
-            from tokens import release_token
-            token_str = release_token
-        except Exception:
-            logger.critical("no 'release_token' in tokens.py file, exit")
-            print("no 'release_token' in token.py, exit")
-            sys.exit()
+    # set token_str depending on --mode parameter
+    try:
+        # see tokens.py module
+        token_str = getattr(tokens, args.mode)
+    except AttributeError:
+        logger.critical("no '" + args.mode + "' token string variable in tokens.py file, exit")
+        print("no '" + args.mode + "' token string variable in tokens.py file, exit")
 
-    # Start with dev token
-    if "-d" in sys.argv:
-        print("Started in development mode")
-        try:
-            # See src/tokens.py file
-            from tokens import dev_token
-            token_str = dev_token
-        except Exception:
-            logger.critical("no 'dev_token' in tokens.py file, exit")
-            print("no 'dev_token' in token.py, exit")
-            sys.exit()
-
-    # Log exception
-    if '-e' in sys.argv:
+    # Log exceptions
+    if args.log_exceptions == True:
         log_exceptions()
 
     # Create necessary directories and files if don't already exist
@@ -275,7 +279,6 @@ def main():
     first_run_check()
     # Write times to the db after the start  to prevent late notifications.
     db_set_times_after_run()
-
 
     updater = Updater(token_str)
     dp = updater.dispatcher
