@@ -22,7 +22,10 @@ filehandler = logging.FileHandler(filename=logging_filename)
 filehandler.setFormatter(logging.Formatter('%(filename)s [LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s'))
 logger.addHandler(filehandler)
 
-# Use '-e' option to start this logger
+
+# To log all exception you should start the program with '--log-exceptions' option.
+# Exception logger generates a bulk otuput, so the log file (lftable-exceptions.log) may become exctremely large
+# That's why this logger is disabled by default
 def log_exceptions():
     # Uncomment this and see 'log/lftable-exceptions.log' if something goes wrong.
 

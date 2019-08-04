@@ -2,19 +2,13 @@
 
 import os
 import sys
+import time
+import sqlite3
 import argparse
-
-from telegram.ext import Updater
-from telegram.ext import CommandHandler, CallbackQueryHandler, JobQueue
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from telegram import ParseMode
-
 from datetime import datetime
 
-import logging
-import sqlite3
-
-import time
+from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, JobQueue
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 
 # Import all local modules, see 'src/' directory to understand how everythong works
 from src.static import *
@@ -22,10 +16,8 @@ from src.messages import *
 from src.backend import *
 from src.keyboards import *
 
-# Writes logging messages to lftable.log file.
-# To log all exception you should start the program with '--log-exceptions' option.
-# Exception logger generates a bulk otuput, so the log file (lftable-exceptions.log) may become exctremely large
-# That's why this logger is disabled by default
+# Logging to 'lftable.log'
+# Add '--log-exceptions' option to script to log exceptions ('lftable-exceptions.log')
 from src.logger import *
 
 
