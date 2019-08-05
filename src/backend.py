@@ -147,26 +147,3 @@ def send_statistics(user_id):
 
     conn.close()
 
-
-# Checks if user is notified when timetable is updated.
-def check_user_notified(ttb, user_id):
-
-    # Connect to users db.
-    conn = sqlite3.connect(notifications_db)
-    cursor = conn.cursor()
-
-    cursor.execute('SELECT users FROM ' + ttb.shortname)
-    result = cursor.fetchall()
-
-    conn.close()
-
-    # List for users notifed about current ttb updates.
-    users_to_notify = []
-    for i in result:
-       users_to_notify.append(i[0])
-
-
-    if str(user_id) in users_to_notify:
-           return True
-    else:
-           return False

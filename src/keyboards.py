@@ -1,6 +1,8 @@
 from src.static import *
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from src.backend import check_user_notified
+from src.db_classes import NotificationsDB
+
+notifications_db = NotificationsDB()
 
 # Main menu keyboard.
 # 4 buttons in main menu. Each button is designed for the corresponding timetable (1-4 course)
@@ -29,10 +31,12 @@ def answer_keyboard(ttb, user_id):
     refresh_button = InlineKeyboardButton('🔄 Обновить страницу', callback_data='refresh')
 
     # For notify function. Adds info to DB.
-    if check_user_notified(ttb, user_id):
+    notifications_db.connect()
+    if notifications_db.check_if_user_notified(ttb, user_id):
         notify_text = u'🔕 Не уведомлять'
     else:
         notify_text = u'🔔 Уведомлять'
+    notifications_db.close()
 
     # Button to put user id into db in order to notify him when the timetable is updated.
     notify_button = InlineKeyboardButton(notify_text, callback_data='notify')
