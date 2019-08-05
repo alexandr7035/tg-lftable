@@ -169,21 +169,9 @@ def notifications_timejob(bot, job):
             # Write to log
             logger.info("'" + checking_ttb.shortname + "' timetable was updated at " + update_time)
 
-            # Connect to users db.
-            conn_notifications_db = sqlite3.connect(notifications_db)
-            cursor_notifications_db = conn_notifications_db.cursor()
-
-            cursor_notifications_db.execute('SELECT users FROM ' + checking_ttb.shortname)
-            result = cursor_notifications_db.fetchall()
-
-            conn_notifications_db.close()
-
-            # List for users notifed about current timetable updates.
-            users_to_notify = []
-            for i in result:
-                users_to_notify.append(i[0])
-            del(result)
-
+            notificationsdb.connect()
+            users_to_notify = notificationsdb.get_notified_users(checking_ttb.shortname)
+            notificationsdb.close()
 
             # Send a notification to each user.
             for user_id in users_to_notify:

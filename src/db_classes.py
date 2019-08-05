@@ -28,4 +28,29 @@ class TimesDB(CommonDB):
         self.cursor.execute("UPDATE times SET time = '" + update_time + "' WHERE (ttb = ?)", (timetable_name,))
         self.connection.commit()
 
+
+class NotificationsDB(CommonDB):
+    def __init__(self):
+        super().__init__(notifications_db)
+
+    def get_notified_users(self, timetable_name):
+        self.cursor.execute('SELECT users FROM ' + timetable_name)
+        result = self.cursor.fetchall()
+
+        notified_users = []
+        for i in result:
+           notified_users.append(i[0])
+
+        return(notified_users)
+
+    def check_if_user_notified(self, user_id, timetable_name):
+
+        all_notified_users = self.get_notified_users(timetable_name)
+
+        if user_id in users_to_notify:
+            return True
+        else:
+            return False
+
 timesdb = TimesDB()
+notificationsdb = NotificationsDB()
