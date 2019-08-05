@@ -8,34 +8,7 @@ from datetime import datetime
 import pytz
 import ssl
 from src.logger import *
-
-# The most important function of the program.
-# Get and return timetable's mtime using urllib module.
-def ttb_gettime(ttb):
-
-    # THIS IS A HOTFIX TO PREVENT "CERTIFICATE_VERIFY_FAILED" ERROR!
-    # DISABLE THIS LATER
-    ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
-
-    # Request
-    response =  urllib.request.urlopen(ttb.url, timeout=25, context=ctx)
-
-    # Get date from HTTP header.
-    native_date = ' '.join(dict(response.headers)['Last-Modified'].rsplit()[1:-1])
-
-    # Transfer date to normal format.
-    gmt_date = datetime.strptime(native_date, '%d %b %Y %H:%M:%S')
-
-    # Transfer date to our timezone (GMT+3).
-    old_tz = pytz.timezone('Europe/London')
-    new_tz = pytz.timezone('Europe/Minsk')
-
-    date = old_tz.localize(gmt_date).astimezone(new_tz)
-
-    return(date)
-
+import src.gettime
 
 # Create necessary project dirs and files.
 # (See 'static.py' for values of the variables)
@@ -116,7 +89,7 @@ def db_set_times_after_run():
 
     for timetable in all_timetables:
 
-        update_time = ttb_gettime(timetable).strftime('%d.%m.%Y %H:%M:%S')
+        update_time = src.gettime.ttb_gettime(timetable).strftime('%d.%m.%Y %H:%M:%S')
 
         cursor.execute("UPDATE times SET time = '" + update_time + "' WHERE (ttb = ?)", (timetable.shortname,));
 

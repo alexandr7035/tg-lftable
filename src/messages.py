@@ -1,7 +1,7 @@
 from src.static import *
 import random
 from datetime import datetime
-from src.backend import ttb_gettime
+import src.gettime
 
 # Main menu text
 def main_menu_message():
@@ -32,7 +32,7 @@ def main_menu_message():
 
 def ttb_message(ttb):
     # Get the timetable's "mtime"
-    ttb_datetime = ttb_gettime(ttb)
+    ttb_datetime = src.gettime.ttb_gettime(ttb)
 
     # Change date to necessary format.
     update_time = ttb_datetime.strftime('%H:%M')

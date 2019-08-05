@@ -16,6 +16,7 @@ from src.messages import *
 from src.backend import *
 from src.keyboards import *
 from src.db_classes import *
+import src.gettime
 
 # Logging to 'lftable.log'
 # Add '--log-exceptions' option to script to log exceptions ('lftable-exceptions.log')
@@ -139,7 +140,7 @@ def notifications_timejob(bot, job):
     for checking_ttb in all_timetables:
 
         # Get ttb update time from law.bsu.by
-        update_time = ttb_gettime(checking_ttb).strftime('%d.%m.%Y %H:%M:%S')
+        update_time = src.gettime.ttb_gettime(checking_ttb).strftime('%d.%m.%Y %H:%M:%S')
 
         # Get old update time from db.
         old_update_time = timesdb.get_time(checking_ttb.shortname)
