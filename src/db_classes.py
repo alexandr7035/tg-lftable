@@ -19,6 +19,14 @@ class TimesDB(CommonDB):
     def __init__(self):
         super().__init__(times_db)
 
+    def construct(self):
+        self.cursor.execute('CREATE TABLE times (ttb, time)')
+
+        for timetable in all_timetables:
+            self.cursor.execute('INSERT INTO times VALUES ("' + timetable.shortname + '", "")')
+
+        self.connection.commit()
+
     def get_time(self, timetable_name):
         self.cursor.execute("SELECT time FROM times WHERE (ttb = ?)", (timetable_name,))
         time = self.cursor.fetchall()[0][0]
@@ -32,6 +40,11 @@ class TimesDB(CommonDB):
 class NotificationsDB(CommonDB):
     def __init__(self):
         super().__init__(notifications_db)
+
+    def construct(self):
+        for timetable in all_timetables:
+            self.cursor.execute('CREATE TABLE ' + timetable.shortname + ' (users)')
+        self.connection.commit()
 
     def get_notified_users(self, timetable_name):
         self.cursor.execute('SELECT users FROM ' + timetable_name)
