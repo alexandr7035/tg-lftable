@@ -32,7 +32,7 @@ def answer_keyboard(ttb, user_id):
 
     # For notify function. Adds info to DB.
     notifications_db.connect()
-    if notifications_db.check_if_user_notified(ttb, user_id):
+    if notifications_db.check_if_user_notified(user_id, ttb.shortname):
         notify_text = u'🔕 Не уведомлять'
     else:
         notify_text = u'🔔 Уведомлять'

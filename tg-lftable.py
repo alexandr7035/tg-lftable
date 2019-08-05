@@ -38,7 +38,7 @@ def button_actions(bot, update):
     # To know which button was pressed.
     callback = query.data
     # The user who pressed the button
-    user_id = query.message.chat_id
+    user_id = str(query.message.chat_id)
 
     # If a new user joins the bot, this function writes his id to the 'statistics.db'
     send_statistics(user_id)
@@ -90,33 +90,22 @@ def button_actions(bot, update):
 
 
             if callback == 'notify':
+                notificationsdb.connect()
 
                 # Disable if user id is already in the db. Delete row from db.
-                if check_user_notified(current_ttb, user_id):
-                    conn = sqlite3.connect(notifications_db)
-                    cursor = conn.cursor()
+                if notificationsdb.check_if_user_notified(user_id, current_ttb.shortname):
 
-                    cursor.execute('DELETE FROM ' + current_ttb.shortname + ' WHERE (users = \'' + str(user_id) + '\')')
-                    result = cursor.fetchall()
-
-                    # Save changes and close.
-                    conn.commit()
-                    conn.close()
+                    notificationsdb.disable_notifications(user_id, current_ttb.shortname)
+                    notificationsdb.close()
 
                     # Write to log
                     logger.info('user ' + str(user_id) + " disabled notifications for the '" + current_ttb.shortname + "' timetable")
 
                 # Enable notifications. Insert user id into the db.
                 else:
-                    conn = sqlite3.connect(notifications_db)
-                    cursor = conn.cursor()
 
-                    cursor.execute('INSERT INTO ' + current_ttb.shortname + ' VALUES (\'' + str(user_id) + '\')')
-                    result = cursor.fetchall()
-
-                    # Save changesa and close.
-                    conn.commit()
-                    conn.close()
+                    notificationsdb.enable_notifications(user_id, current_ttb.shortname)
+                    notificationsdb.close()
 
                     # Write to log
                     logger.info('user ' + str(user_id) + " enabled notifications for the '" + current_ttb.shortname + "' timetable")

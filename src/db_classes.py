@@ -47,10 +47,20 @@ class NotificationsDB(CommonDB):
 
         all_notified_users = self.get_notified_users(timetable_name)
 
-        if user_id in users_to_notify:
+        if user_id in all_notified_users:
             return True
         else:
             return False
+
+    def enable_notifications(self, user_id, timetable_name):
+        self.cursor.execute('INSERT INTO ' + timetable_name + ' VALUES (\'' + user_id + '\')')
+        self.connection.commit()
+
+    def disable_notifications(self, user_id, timetable_name):
+        self.cursor.execute('DELETE FROM ' + timetable_name + ' WHERE (users = \'' + user_id + '\')')
+        self.connection.commit()
+
+
 
 timesdb = TimesDB()
 notificationsdb = NotificationsDB()
