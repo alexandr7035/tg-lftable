@@ -15,6 +15,7 @@ from src.static import *
 from src.messages import *
 from src.backend import *
 from src.keyboards import *
+from src.db_classes import *
 
 # Logging to 'lftable.log'
 # Add '--log-exceptions' option to script to log exceptions ('lftable-exceptions.log')
@@ -143,8 +144,7 @@ def button_actions(bot, update):
 def notifications_timejob(bot, job):
 
     # Connect to the times.db
-    conn_times_db = sqlite3.connect(times_db)
-    cursor_times_db = conn_times_db.cursor()
+    timesdb.connect()
 
     # See 'all_timetables' list in 'src/static.py'
     for checking_ttb in all_timetables:
@@ -153,10 +153,8 @@ def notifications_timejob(bot, job):
         update_time = ttb_gettime(checking_ttb).strftime('%d.%m.%Y %H:%M:%S')
 
         # Get old update time from db.
-        cursor_times_db.execute("SELECT time  FROM times WHERE (ttb = ?)", (checking_ttb.shortname,));
-        result = cursor_times_db.fetchall()
-        old_update_time = result[0][0]
-        del(result)
+        old_update_time = timesdb.get_time(checking_ttb.shortname)
+
 
         # Convert string dates to datetime objects
         dt_update_time = datetime.strptime(update_time, '%d.%m.%Y %H:%M:%S')
@@ -205,15 +203,14 @@ def notifications_timejob(bot, job):
 
 
             # Write new update time to the database.
-            cursor_times_db.execute("UPDATE times SET time = '" + update_time + "' WHERE (ttb = ?)", (checking_ttb.shortname,));
-            conn_times_db.commit()
+            timesdb.write_time(checking_ttb.shortname, update_time)
 
 
         # A delay to prevent any spam control exceptions
         time.sleep(send_message_interval)
 
     # Close 'times.db' until next check.
-    conn_times_db.close()
+    timesdb.close()
 
 
 

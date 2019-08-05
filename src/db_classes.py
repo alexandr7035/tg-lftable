@@ -27,3 +27,5 @@ class TimesDB(CommonDB):
     def write_time(self, timetable_name, update_time):
         self.cursor.execute("UPDATE times SET time = '" + update_time + "' WHERE (ttb = ?)", (timetable_name,))
         self.connection.commit()
+
+timesdb = TimesDB()
