@@ -266,6 +266,15 @@ def main():
     updater.idle()
 
 
+class LFTableBot():
+    def __init__(self):
+        pass
+    
+    def start(self):
+        pass
+
 
 if __name__ == "__main__":
-    main()
+    #main()
+    lftable = LFTableBot()
+    lftable.start()
