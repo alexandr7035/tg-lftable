@@ -11,12 +11,15 @@ from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, JobQueue
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 
 # Import all local modules, see 'src/' directory to understand how everythong works
-from src.static import *
+#from src.static import *
 from src.messages import *
 from src.backend import *
 from src.keyboards import *
-from src.db_classes import *
+#from src.db_classes import *
+
+import src.db_classes
 import src.gettime
+import src.static
 
 # Logging to 'lftable.log'
 # Add '--log-exceptions' option to script to log exceptions ('lftable-exceptions.log')
@@ -268,8 +271,48 @@ def main():
 
 class LFTableBot():
     def __init__(self):
-        pass
-    
+
+        # Start message
+        logger.info("the program was STARTED now")
+
+        # Change directory to the one in wich the script is located
+        os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+        self.timesdb = src.db_classes.TimesDB()
+        self.notificationsdb = src.db_classes.NotificationsDB()
+        self.statisticsdb = src.db_classes.StatisticsDB()
+
+        self.prepare_workspace()
+
+    # This method creates necessary directories and files
+    def prepare_workspace(self):
+
+        # Create directory for sqlite3 databases
+        if not os.path.exists(src.static.db_dir):
+            os.mkdir(db_dir)
+
+        # Create databases. See db_classes.py
+        if not os.path.isfile(src.static.times_db):
+            self.timesdb.connect()
+            self.timesdb.construct()
+            self.timesdb.close()
+
+            logger.info("'" + src.static.times_db + "' database was created")
+
+        if not os.path.isfile(src.static.notifications_db):
+            self.notificationsdb.connect()
+            self.notificationsdb.construct()
+            self.notificationsdb.close()
+
+            logger.info("'" + src.static.notifications_db + "' database was created")
+
+        if not os.path.isfile(src.static.statistics_db):
+            self.statisticsdb.connect()
+            self.statisticsdb.construct()
+            self.statisticsdb.close()
+
+            logger.info("'" + src.static.statistics_db + "' database was created")
+
     def start(self):
         pass
 
