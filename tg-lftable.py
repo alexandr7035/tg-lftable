@@ -10,16 +10,12 @@ from datetime import datetime
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, JobQueue
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 
-# Import all local modules, see 'src/' directory to understand how everythong works
-#from src.static import *
-from src.messages import *
-from src.backend import *
-from src.keyboards import *
-#from src.db_classes import *
-
+# Import all local modules, see 'src/' directory
 import src.db_classes
 import src.gettime
 import src.static
+import src.messages
+import src.keyboards
 
 # Logging to 'lftable.log'
 # Add '--log-exceptions' option to script to log exceptions ('lftable-exceptions.log')
@@ -359,6 +355,14 @@ class LFTableBot():
             log_exceptions()
 
 
+    # Sends main menu on '/start' command
+    def handle_start_command(self, bot, update):
+        update.message.reply_text(src.messages.main_menu_message(),
+                                  reply_markup=src.keyboards.main_menu_keyboard(),
+                                  parse_mode=ParseMode.HTML,
+                                  timeout=10)
+
+
     def start(self):
         # Sets times to the 'times.db' immediately after the run WITHOUT notifiying users
         # This is to prevent late notifications if the bot was down for a long time
@@ -368,10 +372,16 @@ class LFTableBot():
             self.timesdb.write_time(timetable.shortname, update_time)
         self.timesdb.close()
 
-        print(self.bot_token)
 
+        self.updater = Updater(self.bot_token)
+        self.dispatcher = self.updater.dispatcher
 
+        self.dispatcher.add_handler(CommandHandler('start', self.handle_start_command))
+        self.dispatcher.add_handler(CallbackQueryHandler(self.handle_button_click))
 
+        # Checking for updates.
+        self.updater.start_polling(clean=False)
+        self.updater.idle()
 
 
 if __name__ == "__main__":
