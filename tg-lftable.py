@@ -42,7 +42,11 @@ def button_actions(bot, update):
     user_id = str(query.message.chat_id)
 
     # If a new user joins the bot, this function writes his id to the 'statistics.db'
-    send_statistics(user_id)
+    statisticsdb.connect()
+    if user_id not in statisticsdb.get_unique_users():
+        statisticsdb.add_uniq_user(user_id)
+        logger.info("a new user "  + str(user_id) + " added to 'statistics.db'")
+    statisticsdb.close()
 
     # Write to log
     logger.debug('user ' + str(user_id) + " pressed button '" + callback + "'")

@@ -95,28 +95,3 @@ def db_set_times_after_run():
 
     conn.commit()
     conn.close()
-
-
-# Collecting statistics.
-# Writes uniq user ids to 'statistics.db'
-def send_statistics(user_id):
-    conn = sqlite3.connect(statistics_db)
-    cursor = conn.cursor()
-
-    cursor.execute('SELECT * FROM uniq_users')
-    result = cursor.fetchall()
-
-    # List of user_ids in the db
-    uniq_users = []
-    for i in result:
-        uniq_users.append(i[0])
-
-    # Add new user to the db
-    if user_id not in uniq_users:
-        cursor.execute('INSERT INTO uniq_users VALUES (?)', (user_id,))
-        conn.commit()
-        # Write to log
-        logger.info("a new user "  + str(user_id) + " added to 'statistics.db'")
-
-    conn.close()
-

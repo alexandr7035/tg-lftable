@@ -99,3 +99,4 @@ class StatisticsDB(CommonDB):
 
 timesdb = TimesDB()
 notificationsdb = NotificationsDB()
+statisticsdb = StatisticsDB()
