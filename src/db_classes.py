@@ -74,6 +74,28 @@ class NotificationsDB(CommonDB):
         self.connection.commit()
 
 
+class StatisticsDB(CommonDB):
+    def __init__(self):
+        super().__init__(statistics_db)
+
+    def construct(self):
+        self.cursor.execute('CREATE TABLE uniq_users (users)')
+        self.connection.commit()
+
+    def get_unique_users(self):
+        self.cursor.execute('SELECT * FROM uniq_users')
+        result = self.cursor.fetchall()
+
+        unique_users = []
+        for i in result:
+            unique_users.append(i[0])
+
+        return(unique_users)
+
+    def add_uniq_user(self, user_id):
+        self.cursor.execute('INSERT INTO uniq_users VALUES (?)', (user_id,))
+        self.connection.commit()
+
 
 timesdb = TimesDB()
 notificationsdb = NotificationsDB()
