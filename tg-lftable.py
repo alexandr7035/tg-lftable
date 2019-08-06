@@ -275,6 +275,14 @@ class LFTableBot():
         # Start message
         logger.info("the program was STARTED now")
 
+        # Import src/tokens.py
+        try:
+            import src.tokens
+        except ImportError:
+            print('No tokens file. Exit.')
+            logger.critical("can't import 'tokens.py', exit.")
+            sys.exit()
+
         # Change directory to the one in wich the script is located
         os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -283,6 +291,7 @@ class LFTableBot():
         self.statisticsdb = src.db_classes.StatisticsDB()
 
         self.prepare_workspace()
+        self.parse_arguments()
 
     # This method creates necessary directories and files
     def prepare_workspace(self):
@@ -313,6 +322,43 @@ class LFTableBot():
 
             logger.info("'" + src.static.statistics_db + "' database was created")
 
+    # Parse command-line arguments
+    def parse_arguments(self):
+
+        parser = argparse.ArgumentParser(description="tg-lftable: telegram bot which provides an easy way to get the law faculty's timetable (BSU).")
+
+        parser.add_argument('--log-exceptions', action='store_true')
+
+        required_arg = parser.add_argument_group(title='required arguments')
+        required_arg.add_argument('--mode',
+                                  type=str,
+                                  help='Either \'release\' or \'development\' string. The bot starts with the corresponding token',
+                                  required=True)
+
+        args = parser.parse_args()
+
+        if args.mode == 'release':
+            print("Started in 'release' mode")
+
+        elif args.mode == 'develop':
+            print("Started in 'develop' mode")
+
+        else:
+            print("Invalid mode specified. Use either 'release' or 'develop' string.' Exit.")
+            sys.exit()
+
+        # get token depending on --mode parameter
+        try:
+            self.bot_token = getattr(src.tokens, args.mode)
+        except AttributeError:
+            logger.critical("no '" + args.mode + "' token string variable in tokens.py file, exit")
+            print("no '" + args.mode + "' token string variable in tokens.py file, exit")
+
+        # Log exceptions
+        if args.log_exceptions == True:
+            log_exceptions()
+
+
     def start(self):
         # Sets times to the 'times.db' immediately after the run WITHOUT notifiying users
         # This is to prevent late notifications if the bot was down for a long time
@@ -321,6 +367,8 @@ class LFTableBot():
             update_time = src.gettime.ttb_gettime(timetable).strftime('%d.%m.%Y %H:%M:%S')
             self.timesdb.write_time(timetable.shortname, update_time)
         self.timesdb.close()
+
+        print(self.bot_token)
 
 
 
