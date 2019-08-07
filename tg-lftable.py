@@ -362,6 +362,34 @@ class LFTableBot():
                                   parse_mode=ParseMode.HTML,
                                   timeout=10)
 
+    def handle_button_click(self, bot, update):
+        query = update.callback_query
+
+        # Each button has its own callback, see src/keyboards.py
+        callback = query.data
+        # User who pressed the button
+        user_id = str(query.message.chat_id)
+
+        # Message to edit
+        message_id = query.message.message_id
+
+        if callback in ['pravo_c1', 'pravo_c2', 'pravo_c3', 'pravo_c4',
+                        'mag_c1', 'mag_c2', 'refresh', 'notify']:
+            self.show_timetable_message(bot, callback, user_id, message_id)
+
+    def show_timetable_message(self, bot, callback, user_id, message_id):
+        if callback in ['refresh', 'notify']:
+            pass
+        else:
+            ttb_to_show = getattr(src.static, callback)
+
+        bot.edit_message_text(chat_id=user_id,
+                        message_id=message_id,
+                        text=src.messages.ttb_message(ttb_to_show),
+                        # Used for bold font
+                        parse_mode=ParseMode.HTML,
+                        reply_markup=src.keyboards.answer_keyboard(ttb_to_show, user_id), timeout=10)
+
 
     def start(self):
         # Sets times to the 'times.db' immediately after the run WITHOUT notifiying users
@@ -371,7 +399,6 @@ class LFTableBot():
             update_time = src.gettime.ttb_gettime(timetable).strftime('%d.%m.%Y %H:%M:%S')
             self.timesdb.write_time(timetable.shortname, update_time)
         self.timesdb.close()
-
 
         self.updater = Updater(self.bot_token)
         self.dispatcher = self.updater.dispatcher
