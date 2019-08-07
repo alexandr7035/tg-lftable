@@ -375,7 +375,17 @@ class LFTableBot():
         # Message text (for 'notify' and 'refresh' buttons to detect timetable name)
         message_text = query.message.text
 
-        if callback in ['pravo_c1', 'pravo_c2', 'pravo_c3', 'pravo_c4',
+        if callback == 'main_menu':
+	        bot.edit_message_text(chat_id=user_id,
+                        message_id=message_id,
+                        text=src.messages.main_menu_message(),
+                        parse_mode=ParseMode.HTML,
+                        reply_markup=src.keyboards.main_menu_keyboard(), timeout=10)
+
+        elif callback in ['pravo_menu', 'ek_polit_menu', 'mag_menu']:
+            self.show_timetable_menu(bot, callback, user_id, message_id)
+
+        elif callback in ['pravo_c1', 'pravo_c2', 'pravo_c3', 'pravo_c4',
                         'mag_c1', 'mag_c2', 'refresh', 'notify']:
             self.show_timetable_message(bot, callback, user_id, message_id, message_text)
 
@@ -409,6 +419,19 @@ class LFTableBot():
                         parse_mode=ParseMode.HTML,
                         reply_markup=src.keyboards.answer_keyboard(timetable_to_show, user_id), timeout=10)
 
+    def show_timetable_menu(self, bot, callback, user_id, message_id):
+        if callback == 'pravo_menu':
+            keyboard = src.keyboards.pravo_keyboard()
+        elif callback == 'mag_menu':
+            keyboard = src.keyboards.mag_keyboard()
+        elif callback == 'ek_polit_menu':
+            keyboard = src.keyboards.ek_polit_keyboard()
+
+        bot.edit_message_text(chat_id=user_id,
+                        message_id=message_id,
+                        text=src.messages.main_menu_message(),
+                        parse_mode=ParseMode.HTML,
+                        reply_markup=keyboard, timeout=10)
 
     def start(self):
         # Sets times to the 'times.db' immediately after the run WITHOUT notifiying users
