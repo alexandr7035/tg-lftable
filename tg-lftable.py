@@ -372,23 +372,42 @@ class LFTableBot():
 
         # Message to edit
         message_id = query.message.message_id
+        # Message text (for 'notify' and 'refresh' buttons to detect timetable name)
+        message_text = query.message.text
 
         if callback in ['pravo_c1', 'pravo_c2', 'pravo_c3', 'pravo_c4',
                         'mag_c1', 'mag_c2', 'refresh', 'notify']:
-            self.show_timetable_message(bot, callback, user_id, message_id)
+            self.show_timetable_message(bot, callback, user_id, message_id, message_text)
 
-    def show_timetable_message(self, bot, callback, user_id, message_id):
+    def show_timetable_message(self, bot, callback, user_id, message_id, message_text):
+
         if callback in ['refresh', 'notify']:
-            pass
+            # Detect the timetable checking first line of the ttb message
+            for ttb in src.static.all_timetables:
+                if message_text.split('\n')[0] == ttb.name:
+                    timetable_to_show = ttb
         else:
-            ttb_to_show = getattr(src.static, callback)
+            timetable_to_show = getattr(src.static, callback)
+
+
+        # Handle notify button
+        if callback == 'notify':
+            self.notificationsdb.connect()
+            if not self.notificationsdb.check_if_user_notified(user_id, timetable_to_show.shortname):
+                self.notificationsdb.enable_notifications(user_id, timetable_to_show.shortname)
+                logger.info('user ' + user_id + " enabled notifications for the '" + timetable_to_show.shortname + "' timetable")
+            else:
+                self.notificationsdb.disable_notifications(user_id, timetable_to_show.shortname)
+                logger.info('user ' + user_id + " disabled notifications for the '" + timetable_to_show.shortname + "' timetable")
+            self.notificationsdb.close()
+
 
         bot.edit_message_text(chat_id=user_id,
                         message_id=message_id,
-                        text=src.messages.ttb_message(ttb_to_show),
+                        text=src.messages.ttb_message(timetable_to_show),
                         # Used for bold font
                         parse_mode=ParseMode.HTML,
-                        reply_markup=src.keyboards.answer_keyboard(ttb_to_show, user_id), timeout=10)
+                        reply_markup=src.keyboards.answer_keyboard(timetable_to_show, user_id), timeout=10)
 
 
     def start(self):
