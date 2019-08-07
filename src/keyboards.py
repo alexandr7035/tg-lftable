@@ -27,6 +27,19 @@ def pravo_keyboard():
 
     return(InlineKeyboardMarkup(keyboard))
 
+def ek_polit_keyboard():
+    ek_polit_c1.btn = InlineKeyboardButton('Эк. право и политология - 1⃣', callback_data=ek_polit_c1.shortname)
+    ek_polit_c2.btn = InlineKeyboardButton('Эк. право и политология - 2⃣', callback_data=ek_polit_c2.shortname)
+    ek_polit_c3.btn = InlineKeyboardButton('Эк. право и политология - 3⃣', callback_data=ek_polit_c3.shortname)
+    ek_polit_c4.btn = InlineKeyboardButton('Эк. право и политология - 4⃣', callback_data=ek_polit_c4.shortname)
+    back_button = InlineKeyboardButton('⬅️ Назад в меню', callback_data='main_menu')
+
+    keyboard = [[ek_polit_c1.btn, ek_polit_c2.btn],
+                [ek_polit_c3.btn, ek_polit_c4.btn],
+                [back_button]]
+
+    return(InlineKeyboardMarkup(keyboard))
+
 def mag_keyboard():
 
     mag_c1.btn = InlineKeyboardButton('Магистратура - 1⃣', callback_data=mag_c1.shortname)

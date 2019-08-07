@@ -386,6 +386,7 @@ class LFTableBot():
             self.show_timetable_menu(bot, callback, user_id, message_id)
 
         elif callback in ['pravo_c1', 'pravo_c2', 'pravo_c3', 'pravo_c4',
+                          'ek_polit_c1', 'ek_polit_c2', 'ek_polit_c3', 'ek_polit_c4',
                         'mag_c1', 'mag_c2', 'refresh', 'notify']:
             self.show_timetable_message(bot, callback, user_id, message_id, message_text)
 
