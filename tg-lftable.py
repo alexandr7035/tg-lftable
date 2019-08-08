@@ -10,262 +10,274 @@ from datetime import datetime
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, JobQueue
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 
-# Import all local modules, see 'src/' directory to understand how everythong works
-from src.static import *
-from src.messages import *
-from src.backend import *
-from src.keyboards import *
-from src.db_classes import *
+# Import all local modules, see 'src/' directory
+import src.db_classes
 import src.gettime
+import src.static
+import src.messages
+import src.keyboards
 
 # Logging to 'lftable.log'
 # Add '--log-exceptions' option to script to log exceptions ('lftable-exceptions.log')
 from src.logger import *
 
 
-# /start command --> calls main menu.
-def start(bot, update):
-    update.message.reply_text(main_menu_message(),
-                              parse_mode=ParseMode.HTML,
-                              reply_markup=main_menu_keyboard(),
-                              timeout=25)
+class LFTableBot():
+    def __init__(self):
 
+        # Start message
+        logger.info("the program was STARTED now")
 
-# Bot's behavior depending on the button pressed.
-def button_actions(bot, update):
+        # Import src/tokens.py
+        try:
+            import src.tokens
+        except ImportError:
+            print('No tokens file. Exit.')
+            logger.critical("can't import 'tokens.py', exit.")
+            sys.exit()
 
-    query = update.callback_query
+        # Change directory to the one in wich the script is located
+        os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-    # To know which button was pressed.
-    callback = query.data
-    # The user who pressed the button
-    user_id = str(query.message.chat_id)
+        self.timesdb = src.db_classes.TimesDB()
+        self.notificationsdb = src.db_classes.NotificationsDB()
+        self.statisticsdb = src.db_classes.StatisticsDB()
 
-    # If a new user joins the bot, this function writes his id to the 'statistics.db'
-    statisticsdb.connect()
-    if user_id not in statisticsdb.get_unique_users():
-        statisticsdb.add_uniq_user(user_id)
-        logger.info("a new user "  + str(user_id) + " added to 'statistics.db'")
-    statisticsdb.close()
+        self.prepare_workspace()
+        self.parse_arguments()
 
-    # Write to log
-    logger.debug('user ' + str(user_id) + " pressed button '" + callback + "'")
+    # This method creates necessary directories and files
+    def prepare_workspace(self):
 
+        # Create directory for sqlite3 databases
+        if not os.path.exists(src.static.db_dir):
+            os.mkdir(db_dir)
 
-    # Sends main menu.
-    if callback == 'main_menu':
+        # Create databases. See db_classes.py
+        if not os.path.isfile(src.static.times_db):
+            self.timesdb.connect()
+            self.timesdb.construct()
+            self.timesdb.close()
 
-        bot.edit_message_text(chat_id = query.message.chat_id,
-                              message_id = query.message.message_id,
-                              text=main_menu_message(),
-                              # Used for bold font
-                              parse_mode=ParseMode.HTML,
-                              reply_markup=main_menu_keyboard(), timeout=25)
+            logger.info("'" + src.static.times_db + "' database was created")
 
+        if not os.path.isfile(src.static.notifications_db):
+            self.notificationsdb.connect()
+            self.notificationsdb.construct()
+            self.notificationsdb.close()
 
-    # Sends message with certain timetable info depending on the button pressed before.
-    if callback in  ['pravo_c1', 'pravo_c2', 'pravo_c3', 'pravo_c4',
-                             'mag_c1', 'mag_c2',
-                             'refresh', 'notify']:
+            logger.info("'" + src.static.notifications_db + "' database was created")
 
-        # If any of TTB buttons is pressed
-        if callback == 'pravo_c1':
-            current_ttb = pravo_c1
-        elif callback == 'pravo_c2':
-            current_ttb = pravo_c2
-        elif callback == 'pravo_c3':
-            current_ttb = pravo_c3
-        elif callback == 'pravo_c4':
-            current_ttb = pravo_c4
-        elif callback == 'mag_c1':
-            current_ttb = mag_c1
-        elif callback == 'mag_c2':
-            current_ttb = mag_c2
+        if not os.path.isfile(src.static.statistics_db):
+            self.statisticsdb.connect()
+            self.statisticsdb.construct()
+            self.statisticsdb.close()
 
-
-        # If 'refresh' or 'notify' button is pressed
-        elif callback in ['refresh', 'notify']:
-
-            # Detect the timetable checking first line of the ttb message
-            message = query.message
-            for ttb in all_timetables:
-
-                if message.text.split('\n')[0] == ttb.name:
-                    current_ttb = ttb
-
-
-            if callback == 'notify':
-                notificationsdb.connect()
-
-                # Disable if user id is already in the db. Delete row from db.
-                if notificationsdb.check_if_user_notified(user_id, current_ttb.shortname):
-
-                    notificationsdb.disable_notifications(user_id, current_ttb.shortname)
-                    notificationsdb.close()
-
-                    # Write to log
-                    logger.info('user ' + str(user_id) + " disabled notifications for the '" + current_ttb.shortname + "' timetable")
-
-                # Enable notifications. Insert user id into the db.
-                else:
-
-                    notificationsdb.enable_notifications(user_id, current_ttb.shortname)
-                    notificationsdb.close()
-
-                    # Write to log
-                    logger.info('user ' + str(user_id) + " enabled notifications for the '" + current_ttb.shortname + "' timetable")
-
-
-
-        # Edit message depending on the callback and current ttb variable
-        bot.edit_message_text(chat_id=query.message.chat_id,
-                        message_id=query.message.message_id,
-                        text=ttb_message(current_ttb),
-                        # Used for bold font
-                        parse_mode=ParseMode.HTML,
-                        reply_markup=answer_keyboard(current_ttb, user_id), timeout=25)
-
-
-    # Deletes notification message if 'delete' button is pressed.
-    if callback == 'delete_notification':
-        bot.delete_message(user_id, query.message.message_id)
-        # Write to log
-        logger.info('user ' + str(user_id) + " deleted notification (message: " + str(query.message.message_id) + ")")
-
-
-
-# A timejob for notifications
-def notifications_timejob(bot, job):
-
-    # Connect to the times.db
-    timesdb.connect()
-
-    # See 'all_timetables' list in 'src/static.py'
-    for checking_ttb in all_timetables:
-
-        # Get ttb update time from law.bsu.by
-        update_time = src.gettime.ttb_gettime(checking_ttb).strftime('%d.%m.%Y %H:%M:%S')
-
-        # Get old update time from db.
-        old_update_time = timesdb.get_time(checking_ttb.shortname)
-
-
-        # Convert string dates to datetime objects
-        dt_update_time = datetime.strptime(update_time, '%d.%m.%Y %H:%M:%S')
-        dt_old_update_time = datetime.strptime(old_update_time, '%d.%m.%Y %H:%M:%S')
-
-
-        # Compare the two dates
-        # If the timetable was updated, sends it to all users
-        #+ from certain table in 'users.db'
-        if dt_update_time > dt_old_update_time:
-
-            # Write to log
-            logger.info("'" + checking_ttb.shortname + "' timetable was updated at " + update_time)
-
-            notificationsdb.connect()
-            users_to_notify = notificationsdb.get_notified_users(checking_ttb.shortname)
-            notificationsdb.close()
-
-            # Send a notification to each user.
-            for user_id in users_to_notify:
-
-                try:
-                    bot.send_message(chat_id=user_id, text=notification_message(checking_ttb, dt_update_time), reply_markup=notify_keyboard(), parse_mode=ParseMode.HTML)
-                except Exception as e:
-                    # Write to log
-                    logger.info("can't send '" + checking_ttb.shortname + "' notification to user " + str(user_id) + ", skip")
-                    continue
-
-                # Write to log
-                logger.info("'" + checking_ttb.shortname + "' notification was sent to user " + str(user_id))
-
-                # A delay to prevent any spam control exceptions
-                time.sleep(send_message_interval)
-
-
-            # Write new update time to the database.
-            timesdb.write_time(checking_ttb.shortname, update_time)
-
-
-        # A delay to prevent any spam control exceptions
-        time.sleep(send_message_interval)
-
-    # Close 'times.db' until next check.
-    timesdb.close()
-
-
-
-def main():
-
-    # Write 'program started' message to log
-    logger.info("the program was STARTED now")
-
-    try:
-        import src.tokens
-    except ImportError:
-        print('No tokens file ' + tokens_file + '. Exit.')
-        logger.critical("can't import 'tokens.py', exit.")
-        sys.exit()
+            logger.info("'" + src.static.statistics_db + "' database was created")
 
     # Parse command-line arguments
-    parser = argparse.ArgumentParser(description="tg-lftable: telegram bot which provides an easy way to get the law faculty's timetable (BSU).")
+    def parse_arguments(self):
 
-    parser.add_argument('--log-exceptions', action='store_true')
+        parser = argparse.ArgumentParser(description="tg-lftable: telegram bot which provides an easy way to get the law faculty's timetable (BSU).")
 
-    required_arg = parser.add_argument_group(title='required arguments')
-    required_arg.add_argument('--mode',
-                        type=str,
-                        help='Either \'release\' or \'development\' string. The bot starts with the corresponding token',
-                        required=True)
+        parser.add_argument('--log-exceptions', action='store_true')
 
-    args = parser.parse_args()
+        required_arg = parser.add_argument_group(title='required arguments')
+        required_arg.add_argument('--mode',
+                                  type=str,
+                                  help='Either \'release\' or \'development\' string. The bot starts with the corresponding token',
+                                  required=True)
 
-    if args.mode == 'release':
-        print("Started in 'release' mode")
+        args = parser.parse_args()
 
-    elif args.mode == 'develop':
-        print("Started in 'develop' mode")
+        if args.mode == 'release':
+            print("Started in 'release' mode")
 
-    else:
-        print("Invalid mode specified. Use either 'release' or 'develop' string.' Exit.")
-        sys.exit()
+        elif args.mode == 'develop':
+            print("Started in 'develop' mode")
 
-    # set token_str depending on --mode parameter
-    try:
-        # see tokens.py module
-        token_str = getattr(src.tokens, args.mode)
-    except AttributeError:
-        logger.critical("no '" + args.mode + "' token string variable in tokens.py file, exit")
-        print("no '" + args.mode + "' token string variable in tokens.py file, exit")
+        else:
+            print("Invalid mode specified. Use either 'release' or 'develop' string.' Exit.")
+            sys.exit()
 
-    # Log exceptions
-    if args.log_exceptions == True:
-        log_exceptions()
+        # get token depending on --mode parameter
+        try:
+            self.bot_token = getattr(src.tokens, args.mode)
+        except AttributeError:
+            logger.critical("no '" + args.mode + "' token string variable in tokens.py file, exit")
+            print("no '" + args.mode + "' token string variable in tokens.py file, exit")
 
-    # Create necessary directories and files if don't already exist
-    # See 'src/backend.py' file
-    first_run_check()
-    # Write times to the db after the start  to prevent late notifications.
-    db_set_times_after_run()
+        # Log exceptions
+        if args.log_exceptions == True:
+            log_exceptions()
 
-    updater = Updater(token_str)
-    dp = updater.dispatcher
 
-    # Run timejob for notificatins
-    job = updater.job_queue
-    job.run_repeating(notifications_timejob, interval = check_updates_interval, first=0)
+    # Sends main menu on '/start' command
+    def handle_start_command(self, bot, update):
+        update.message.reply_text(src.messages.main_menu_message(),
+                                  reply_markup=src.keyboards.main_menu_keyboard(),
+                                  parse_mode=ParseMode.HTML,
+                                  timeout=10)
 
-    # Handlers
-    dp.add_handler(CommandHandler('start', start))
-    dp.add_handler(CallbackQueryHandler(button_actions))
+    def handle_button_click(self, bot, update):
+        query = update.callback_query
 
-    # Checking for updates.
-    updater.start_polling(clean=True)
-    # Stop bot if  <Ctrl + C> is pressed.
-    updater.idle()
+        # Each button has its own callback, see src/keyboards.py
+        callback = query.data
+        # User who pressed the button
+        user_id = str(query.message.chat_id)
 
+        # Message to edit
+        message_id = query.message.message_id
+        # Message text (for 'notify' and 'refresh' buttons to detect timetable name)
+        message_text = query.message.text
+
+        if callback == 'main_menu':
+            bot.edit_message_text(chat_id=user_id,
+                        message_id=message_id,
+                        text=src.messages.main_menu_message(),
+                        parse_mode=ParseMode.HTML,
+                        reply_markup=src.keyboards.main_menu_keyboard(), timeout=10)
+
+        elif callback in ['pravo_menu', 'ek_polit_menu', 'mag_menu']:
+            self.show_timetable_menu(bot, callback, user_id, message_id)
+
+        elif callback in ['pravo_c1', 'pravo_c2', 'pravo_c3', 'pravo_c4',
+                          'ek_polit_c1', 'ek_polit_c2', 'ek_polit_c3', 'ek_polit_c4',
+                        'mag_c1', 'mag_c2', 'refresh', 'notify']:
+            self.show_timetable_message(bot, callback, user_id, message_id, message_text)
+
+    def show_timetable_message(self, bot, callback, user_id, message_id, message_text):
+
+        if callback in ['refresh', 'notify']:
+            # Detect the timetable checking first line of the ttb message
+            for ttb in src.static.all_timetables:
+                if message_text.split('\n')[0] == ttb.name:
+                    timetable_to_show = ttb
+        else:
+            timetable_to_show = getattr(src.static, callback)
+
+
+        # Handle notify button
+        if callback == 'notify':
+            self.notificationsdb.connect()
+            if not self.notificationsdb.check_if_user_notified(user_id, timetable_to_show.shortname):
+                self.notificationsdb.enable_notifications(user_id, timetable_to_show.shortname)
+                logger.info('user ' + user_id + " enabled notifications for the '" + timetable_to_show.shortname + "' timetable")
+            else:
+                self.notificationsdb.disable_notifications(user_id, timetable_to_show.shortname)
+                logger.info('user ' + user_id + " disabled notifications for the '" + timetable_to_show.shortname + "' timetable")
+            self.notificationsdb.close()
+
+
+        bot.edit_message_text(chat_id=user_id,
+                        message_id=message_id,
+                        text=src.messages.ttb_message(timetable_to_show),
+                        # Used for bold font
+                        parse_mode=ParseMode.HTML,
+                        reply_markup=src.keyboards.answer_keyboard(timetable_to_show, user_id), timeout=10)
+
+    def show_timetable_menu(self, bot, callback, user_id, message_id):
+        if callback == 'pravo_menu':
+            keyboard = src.keyboards.pravo_keyboard()
+        elif callback == 'mag_menu':
+            keyboard = src.keyboards.mag_keyboard()
+        elif callback == 'ek_polit_menu':
+            keyboard = src.keyboards.ek_polit_keyboard()
+
+        bot.edit_message_text(chat_id=user_id,
+                        message_id=message_id,
+                        text=src.messages.main_menu_message(),
+                        parse_mode=ParseMode.HTML,
+                        reply_markup=keyboard, timeout=10)
+
+    # A timejob for notifications
+    def notifications_timejob(self, bot, job):
+        print('start check')
+
+        # Connect to the times.db
+        self.timesdb.connect()
+
+        # See 'all_timetables' list in 'src/static.py'
+        for checking_ttb in src.static.all_timetables:
+
+            # Get ttb update time from law.bsu.by
+            update_time = src.gettime.ttb_gettime(checking_ttb).strftime('%d.%m.%Y %H:%M:%S')
+
+            # Get old update time from db.
+            old_update_time = self.timesdb.get_time(checking_ttb.shortname)
+
+            # Convert string dates to datetime objects
+            dt_update_time = datetime.strptime(update_time, '%d.%m.%Y %H:%M:%S')
+            dt_old_update_time = datetime.strptime(old_update_time, '%d.%m.%Y %H:%M:%S')
+
+            # Compare the two dates
+            # If the timetable was updated, sends it to all users
+            #+ from certain table in 'users.db'
+            if dt_update_time > dt_old_update_time:
+
+                # Write to log
+                logger.info("'" + checking_ttb.shortname + "' timetable was updated at " + update_time)
+
+                self.notificationsdb.connect()
+                users_to_notify = self.notificationsdb.get_notified_users(checking_ttb.shortname)
+                self.notificationsdb.close()
+
+                # Send a notification to each user.
+                for user_id in users_to_notify:
+
+                    try:
+                        bot.send_message(chat_id=user_id, text=src.messages.notification_message(checking_ttb, dt_update_time), reply_markup=src.keyboards.notify_keyboard(), parse_mode=ParseMode.HTML)
+                    except Exception as e:
+                        print(e)
+                        # Write to log
+                        logger.info("can't send '" + checking_ttb.shortname + "' notification to user " + str(user_id) + ", skip")
+                        continue
+
+                    # Write to log
+                    logger.info("'" + checking_ttb.shortname + "' notification was sent to user " + str(user_id))
+
+                    # A delay to prevent any spam control exceptions
+                    time.sleep(src.static.send_message_interval)
+
+
+                # Write new update time to the database.
+                self.timesdb.write_time(checking_ttb.shortname, update_time)
+
+
+            # A delay to prevent any spam control exceptions
+            time.sleep(src.static.send_message_interval)
+
+        # Close 'times.db' until next check.
+        self.timesdb.close()
+
+    def start(self):
+        # Sets times to the 'times.db' immediately after the run WITHOUT notifiying users
+        # This is to prevent late notifications if the bot was down for a long time
+        self.timesdb.connect()
+        for timetable in src.static.all_timetables:
+            update_time = src.gettime.ttb_gettime(timetable).strftime('%d.%m.%Y %H:%M:%S')
+            self.timesdb.write_time(timetable.shortname, update_time)
+        self.timesdb.close()
+
+        self.updater = Updater(self.bot_token)
+        self.dispatcher = self.updater.dispatcher
+
+         # Run timejob for notificatins
+        job = self.updater.job_queue
+        job.run_repeating(self.notifications_timejob, interval = src.static.check_updates_interval, first=0)
+
+        self.dispatcher.add_handler(CommandHandler('start', self.handle_start_command))
+        self.dispatcher.add_handler(CallbackQueryHandler(self.handle_button_click))
+
+
+
+        # Checking for updates.
+        self.updater.start_polling(clean=False)
+        self.updater.idle()
 
 
 if __name__ == "__main__":
-    main()
+    #main()
+    lftable = LFTableBot()
+    lftable.start()
