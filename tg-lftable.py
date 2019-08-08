@@ -157,7 +157,6 @@ class LFTableBot():
         else:
             timetable_to_show = getattr(src.static, callback)
 
-
         # Handle notify button
         if callback == 'notify':
             self.notificationsdb.connect()
@@ -168,7 +167,6 @@ class LFTableBot():
                 self.notificationsdb.disable_notifications(user_id, timetable_to_show.shortname)
                 logger.info('user ' + user_id + " disabled notifications for the '" + timetable_to_show.shortname + "' timetable")
             self.notificationsdb.close()
-
 
         bot.edit_message_text(chat_id=user_id,
                         message_id=message_id,
@@ -193,7 +191,6 @@ class LFTableBot():
 
     # A timejob for notifications
     def notifications_timejob(self, bot, job):
-        print('start check')
 
         # Connect to the times.db
         self.timesdb.connect()
@@ -227,23 +224,24 @@ class LFTableBot():
                 for user_id in users_to_notify:
 
                     try:
-                        bot.send_message(chat_id=user_id, text=src.messages.notification_message(checking_ttb, dt_update_time), reply_markup=src.keyboards.notify_keyboard(), parse_mode=ParseMode.HTML)
+                        bot.send_message(chat_id=user_id,
+                                         text=src.messages.notification_message(checking_ttb, dt_update_time),
+                                         reply_markup=src.keyboards.notify_keyboard(),
+                                         parse_mode=ParseMode.HTML)
                     except Exception as e:
                         print(e)
                         # Write to log
-                        logger.info("can't send '" + checking_ttb.shortname + "' notification to user " + str(user_id) + ", skip")
+                        logger.info("can't send '" + checking_ttb.shortname + "' notification to user " + user_id + ", skip")
                         continue
 
                     # Write to log
-                    logger.info("'" + checking_ttb.shortname + "' notification was sent to user " + str(user_id))
+                    logger.info("'" + checking_ttb.shortname + "' notification was sent to user " + user_id)
 
                     # A delay to prevent any spam control exceptions
                     time.sleep(src.static.send_message_interval)
 
-
                 # Write new update time to the database.
                 self.timesdb.write_time(checking_ttb.shortname, update_time)
-
 
             # A delay to prevent any spam control exceptions
             time.sleep(src.static.send_message_interval)
@@ -270,14 +268,11 @@ class LFTableBot():
         self.dispatcher.add_handler(CommandHandler('start', self.handle_start_command))
         self.dispatcher.add_handler(CallbackQueryHandler(self.handle_button_click))
 
-
-
         # Checking for updates.
         self.updater.start_polling(clean=False)
         self.updater.idle()
 
 
 if __name__ == "__main__":
-    #main()
     lftable = LFTableBot()
     lftable.start()
