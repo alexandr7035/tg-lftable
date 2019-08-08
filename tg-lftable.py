@@ -27,6 +27,7 @@ class LFTableBot():
     def __init__(self):
 
         # Start message
+        logger.info("-")
         logger.info("the program was STARTED now")
 
         # Import src/tokens.py
