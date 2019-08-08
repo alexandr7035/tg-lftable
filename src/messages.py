@@ -25,7 +25,7 @@ def main_menu_message():
     # Newline symbol
     text += '\n'
 
-    text += 'Выберите нужное расписание:'
+    text += 'Выберите расписание:'
 
     return(text)
 

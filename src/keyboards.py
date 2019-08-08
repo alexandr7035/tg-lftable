@@ -7,7 +7,7 @@ notifications_db = NotificationsDB()
 
 def main_menu_keyboard():
     pravo_btn = InlineKeyboardButton('📌 Правоведение', callback_data='pravo_menu')
-    ek_polit_btn = InlineKeyboardButton('📌 Эк. право + политология', callback_data='ek_polit_menu')
+    ek_polit_btn = InlineKeyboardButton('📌 Эк. право и политология', callback_data='ek_polit_menu')
     mag_btn = InlineKeyboardButton('📌 Магистратура', callback_data='mag_menu')
 
     keyboard = [[pravo_btn], [ek_polit_btn], [mag_btn]]
@@ -19,7 +19,7 @@ def pravo_keyboard():
     pravo_c2.btn = InlineKeyboardButton('Правоведение - 2⃣', callback_data=pravo_c2.shortname)
     pravo_c3.btn = InlineKeyboardButton('Правоведение - 3⃣', callback_data=pravo_c3.shortname)
     pravo_c4.btn = InlineKeyboardButton('Правоведение - 4⃣', callback_data=pravo_c4.shortname)
-    back_button = InlineKeyboardButton('⬅️ Назад в меню', callback_data='main_menu')
+    back_button = InlineKeyboardButton('⬅️ Назад', callback_data='main_menu')
 
     keyboard = [[pravo_c1.btn, pravo_c2.btn],
                 [pravo_c3.btn, pravo_c4.btn],
@@ -32,7 +32,7 @@ def ek_polit_keyboard():
     ek_polit_c2.btn = InlineKeyboardButton('Эк. право и политология - 2⃣', callback_data=ek_polit_c2.shortname)
     ek_polit_c3.btn = InlineKeyboardButton('Эк. право и политология - 3⃣', callback_data=ek_polit_c3.shortname)
     ek_polit_c4.btn = InlineKeyboardButton('Эк. право и политология - 4⃣', callback_data=ek_polit_c4.shortname)
-    back_button = InlineKeyboardButton('⬅️ Назад в меню', callback_data='main_menu')
+    back_button = InlineKeyboardButton('⬅️ Назад', callback_data='main_menu')
 
     keyboard = [[ek_polit_c1.btn, ek_polit_c2.btn],
                 [ek_polit_c3.btn, ek_polit_c4.btn],
@@ -44,7 +44,7 @@ def mag_keyboard():
 
     mag_c1.btn = InlineKeyboardButton('Магистратура - 1⃣', callback_data=mag_c1.shortname)
     mag_c2.btn = InlineKeyboardButton('Магистратура - 2⃣', callback_data=mag_c2.shortname)
-    back_button = InlineKeyboardButton('⬅️ Назад в меню', callback_data='main_menu')
+    back_button = InlineKeyboardButton('⬅️ Назад', callback_data='main_menu')
 
     keyboard = [[mag_c1.btn, mag_c2.btn],
                 [back_button]]
