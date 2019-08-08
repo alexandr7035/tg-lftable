@@ -153,7 +153,6 @@ def notifications_timejob(bot, job):
         dt_update_time = datetime.strptime(update_time, '%d.%m.%Y %H:%M:%S')
         dt_old_update_time = datetime.strptime(old_update_time, '%d.%m.%Y %H:%M:%S')
 
-
         # Compare the two dates
         # If the timetable was updated, sends it to all users
         #+ from certain table in 'users.db'
@@ -376,7 +375,7 @@ class LFTableBot():
         message_text = query.message.text
 
         if callback == 'main_menu':
-	        bot.edit_message_text(chat_id=user_id,
+            bot.edit_message_text(chat_id=user_id,
                         message_id=message_id,
                         text=src.messages.main_menu_message(),
                         parse_mode=ParseMode.HTML,
@@ -434,6 +433,66 @@ class LFTableBot():
                         parse_mode=ParseMode.HTML,
                         reply_markup=keyboard, timeout=10)
 
+    # A timejob for notifications
+    def notifications_timejob(self, bot, job):
+        print('start check')
+
+        # Connect to the times.db
+        self.timesdb.connect()
+
+        # See 'all_timetables' list in 'src/static.py'
+        for checking_ttb in src.static.all_timetables:
+
+            # Get ttb update time from law.bsu.by
+            update_time = src.gettime.ttb_gettime(checking_ttb).strftime('%d.%m.%Y %H:%M:%S')
+
+            # Get old update time from db.
+            old_update_time = self.timesdb.get_time(checking_ttb.shortname)
+
+            # Convert string dates to datetime objects
+            dt_update_time = datetime.strptime(update_time, '%d.%m.%Y %H:%M:%S')
+            dt_old_update_time = datetime.strptime(old_update_time, '%d.%m.%Y %H:%M:%S')
+
+            # Compare the two dates
+            # If the timetable was updated, sends it to all users
+            #+ from certain table in 'users.db'
+            if dt_update_time > dt_old_update_time:
+
+                # Write to log
+                logger.info("'" + checking_ttb.shortname + "' timetable was updated at " + update_time)
+
+                self.notificationsdb.connect()
+                users_to_notify = self.notificationsdb.get_notified_users(checking_ttb.shortname)
+                self.notificationsdb.close()
+
+                # Send a notification to each user.
+                for user_id in users_to_notify:
+
+                    try:
+                        bot.send_message(chat_id=user_id, text=src.messages.notification_message(checking_ttb, dt_update_time), reply_markup=src.keyboards.notify_keyboard(), parse_mode=ParseMode.HTML)
+                    except Exception as e:
+                        print(e)
+                        # Write to log
+                        logger.info("can't send '" + checking_ttb.shortname + "' notification to user " + str(user_id) + ", skip")
+                        continue
+
+                    # Write to log
+                    logger.info("'" + checking_ttb.shortname + "' notification was sent to user " + str(user_id))
+
+                    # A delay to prevent any spam control exceptions
+                    time.sleep(src.static.send_message_interval)
+
+
+                # Write new update time to the database.
+                self.timesdb.write_time(checking_ttb.shortname, update_time)
+
+
+            # A delay to prevent any spam control exceptions
+            time.sleep(src.static.send_message_interval)
+
+        # Close 'times.db' until next check.
+        self.timesdb.close()
+
     def start(self):
         # Sets times to the 'times.db' immediately after the run WITHOUT notifiying users
         # This is to prevent late notifications if the bot was down for a long time
@@ -446,8 +505,14 @@ class LFTableBot():
         self.updater = Updater(self.bot_token)
         self.dispatcher = self.updater.dispatcher
 
+         # Run timejob for notificatins
+        job = self.updater.job_queue
+        job.run_repeating(self.notifications_timejob, interval = src.static.check_updates_interval, first=0)
+
         self.dispatcher.add_handler(CommandHandler('start', self.handle_start_command))
         self.dispatcher.add_handler(CallbackQueryHandler(self.handle_button_click))
+
+
 
         # Checking for updates.
         self.updater.start_polling(clean=False)
