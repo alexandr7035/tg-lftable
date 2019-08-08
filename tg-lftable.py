@@ -148,6 +148,13 @@ class LFTableBot():
                         'mag_c1', 'mag_c2', 'refresh', 'notify']:
             self.show_timetable_message(bot, callback, user_id, message_id, message_text)
 
+        if callback == 'delete_notification':
+            # Deletes notification message if 'delete' button is pressed.
+            bot.delete_message(user_id, message_id)
+            # Write to log
+            logger.info('user ' + str(user_id) + " deleted notification (message: " + str(query.message.message_id) + ")")
+
+
     def show_timetable_message(self, bot, callback, user_id, message_id, message_text):
 
         if callback in ['refresh', 'notify']:
