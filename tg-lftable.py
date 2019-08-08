@@ -16,6 +16,7 @@ import src.gettime
 import src.static
 import src.messages
 import src.keyboards
+import src.test_notifications
 
 # Logging to 'lftable.log'
 # Add '--log-exceptions' option to script to log exceptions ('lftable-exceptions.log')
@@ -81,6 +82,7 @@ class LFTableBot():
         parser = argparse.ArgumentParser(description="tg-lftable: telegram bot which provides an easy way to get the law faculty's timetable (BSU).")
 
         parser.add_argument('--log-exceptions', action='store_true')
+        parser.add_argument('--test-notifications', action='store_true')
 
         required_arg = parser.add_argument_group(title='required arguments')
         required_arg.add_argument('--mode',
@@ -88,12 +90,12 @@ class LFTableBot():
                                   help='Either \'release\' or \'development\' string. The bot starts with the corresponding token',
                                   required=True)
 
-        args = parser.parse_args()
+        self.args = parser.parse_args()
 
-        if args.mode == 'release':
+        if self.args.mode == 'release':
             print("Started in 'release' mode")
 
-        elif args.mode == 'develop':
+        elif self.args.mode == 'develop':
             print("Started in 'develop' mode")
 
         else:
@@ -102,15 +104,14 @@ class LFTableBot():
 
         # get token depending on --mode parameter
         try:
-            self.bot_token = getattr(src.tokens, args.mode)
+            self.bot_token = getattr(src.tokens, self.args.mode)
         except AttributeError:
-            logger.critical("no '" + args.mode + "' token string variable in tokens.py file, exit")
-            print("no '" + args.mode + "' token string variable in tokens.py file, exit")
+            logger.critical("no '" + self.args.mode + "' token string variable in tokens.py file, exit")
+            print("no '" + self.args.mode + "' token string variable in tokens.py file, exit")
 
         # Log exceptions
-        if args.log_exceptions == True:
+        if self.args.log_exceptions == True:
             log_exceptions()
-
 
     # Sends main menu on '/start' command
     def handle_start_command(self, bot, update):
@@ -257,6 +258,10 @@ class LFTableBot():
             update_time = src.gettime.ttb_gettime(timetable).strftime('%d.%m.%Y %H:%M:%S')
             self.timesdb.write_time(timetable.shortname, update_time)
         self.timesdb.close()
+
+        if self.args.test_notifications == True:
+            src.test_notifications.test_notifications()
+
 
         self.updater = Updater(self.bot_token)
         self.dispatcher = self.updater.dispatcher
