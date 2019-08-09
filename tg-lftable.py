@@ -205,7 +205,7 @@ class LFTableBot():
 
         bot.edit_message_text(chat_id=user_id,
                         message_id=message_id,
-                        text=src.messages.ttb_message(timetable_to_show),
+                        text=src.messages.timetable_message(timetable_to_show),
                         parse_mode=ParseMode.HTML,
                         reply_markup=src.keyboards.answer_keyboard(timetable_to_show, user_id), timeout=10)
 

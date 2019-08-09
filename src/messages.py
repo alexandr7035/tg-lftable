@@ -29,7 +29,7 @@ def main_menu_message():
 
     return(text)
 
-def ttb_message(ttb):
+def timetable_message(ttb):
     # Get the timetable's "mtime"
     ttb_datetime = src.gettime.ttb_gettime(ttb)
 
