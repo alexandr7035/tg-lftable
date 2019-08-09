@@ -1,6 +1,5 @@
 import sqlite3
-from src.static import *
-from src.logger import *
+import src.static
 
 # TimesDB, NotificaitonsDB and StatisticsDB are inherited from this
 class CommonDB():
@@ -24,7 +23,7 @@ class CommonDB():
 class TimesDB(CommonDB):
     def __init__(self):
 		# Set path to the db
-        super().__init__(timesdb_path)
+        super().__init__(src.static.timesdb_path)
 
     # Creates necessary tables after db was created
     def construct(self):
@@ -51,7 +50,7 @@ class TimesDB(CommonDB):
 class NotificationsDB(CommonDB):
     def __init__(self):
 		# Set path to the db
-        super().__init__(notificationsdb_path)
+        super().__init__(src.static.notificationsdb_path)
 
     # Creates necessary tables after db was created
     def construct(self):
@@ -94,7 +93,7 @@ class NotificationsDB(CommonDB):
 class StatisticsDB(CommonDB):
     def __init__(self):
 		# Set path to the db
-        super().__init__(statisticsdb_path)
+        super().__init__(src.static.statisticsdb_path)
 
     # Creates necessary tables after db was created
     def construct(self):
