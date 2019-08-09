@@ -116,8 +116,3 @@ class StatisticsDB(CommonDB):
     def add_uniq_user(self, user_id):
         self.cursor.execute('INSERT INTO uniq_users VALUES (?)', (user_id,))
         self.connection.commit()
-
-
-timesdb = TimesDB()
-notificationsdb = NotificationsDB()
-statisticsdb = StatisticsDB()
