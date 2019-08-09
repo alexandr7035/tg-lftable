@@ -60,26 +60,26 @@ class LFTableBot():
             os.mkdir(db_dir)
 
         # Create databases. See db_classes.py
-        if not os.path.isfile(src.static.times_db):
+        if not os.path.isfile(src.static.timesdb_path):
             self.timesdb.connect()
             self.timesdb.construct()
             self.timesdb.close()
 
-            logger.info("'" + src.static.times_db + "' database was created")
+            logger.info("'" + src.static.timesdb_path + "' database was created")
 
-        if not os.path.isfile(src.static.notifications_db):
+        if not os.path.isfile(src.static.notificationsdb_path):
             self.notificationsdb.connect()
             self.notificationsdb.construct()
             self.notificationsdb.close()
 
-            logger.info("'" + src.static.notifications_db + "' database was created")
+            logger.info("'" + src.static.notificationsdb_path + "' database was created")
 
-        if not os.path.isfile(src.static.statistics_db):
+        if not os.path.isfile(src.static.statisticsdb_path):
             self.statisticsdb.connect()
             self.statisticsdb.construct()
             self.statisticsdb.close()
 
-            logger.info("'" + src.static.statistics_db + "' database was created")
+            logger.info("'" + src.static.statisticsdb_path + "' database was created")
 
     # Parse command-line arguments
     def parse_arguments(self):

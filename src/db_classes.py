@@ -24,7 +24,7 @@ class CommonDB():
 class TimesDB(CommonDB):
     def __init__(self):
 		# Set path to the db
-        super().__init__(times_db)
+        super().__init__(timesdb_path)
 
     # Creates necessary tables after db was created
     def construct(self):
@@ -51,7 +51,7 @@ class TimesDB(CommonDB):
 class NotificationsDB(CommonDB):
     def __init__(self):
 		# Set path to the db
-        super().__init__(notifications_db)
+        super().__init__(notificationsdb_path)
 
     # Creates necessary tables after db was created
     def construct(self):
@@ -94,7 +94,7 @@ class NotificationsDB(CommonDB):
 class StatisticsDB(CommonDB):
     def __init__(self):
 		# Set path to the db
-        super().__init__(statistics_db)
+        super().__init__(statisticsdb_path)
 
     # Creates necessary tables after db was created
     def construct(self):

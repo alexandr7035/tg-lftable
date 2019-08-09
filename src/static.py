@@ -9,9 +9,9 @@ log_dir = 'log/'
 
 # Databases.
 db_dir = 'db/'
-notifications_db = db_dir + 'notifications.db'
-times_db = db_dir + 'times.db'
-statistics_db = db_dir + 'statistics.db'
+notificationsdb_path = db_dir + 'notifications.db'
+timesdb_path = db_dir + 'times.db'
+statisticsdb_path = db_dir + 'statistics.db'
 
 
 # Intervals for update checks and notifications(s).
