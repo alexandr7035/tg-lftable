@@ -1,2 +1,2 @@
-pytz 
-python-telegram-bot
+pytz==2019.2
+python-telegram-bot==11.1.0
