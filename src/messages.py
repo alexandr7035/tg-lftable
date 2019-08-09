@@ -7,9 +7,10 @@ import src.static
 def main_menu_message():
 
     text = '<b>LFTable v' + src.static.lftable_version + '</b>: быстрый доступ к расписанию занятий юридического факультета БГУ.\n\n'
-
-    text += 'Источник: https://law.bsu.by\n'
-    text += 'Информация об авторских правах юрфака: https://law.bsu.by/avtorskie-prava.html\n'
+    
+    text += 'Источник: law.bsu.by\n'
+    text += 'Группа Вконтакте: vk.com/lftable\n'
+    text += 'Бот для ВК - в личных сообщениях сообщества\n'
 
     # Use a string of 15 randomly mixed two space symbols to fix badrequest error.
     space = '\u0020'

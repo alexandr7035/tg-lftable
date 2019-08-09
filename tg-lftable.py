@@ -126,6 +126,7 @@ class LFTableBot():
         update.message.reply_text(src.messages.main_menu_message(),
                                   reply_markup=src.keyboards.main_menu_keyboard(),
                                   parse_mode=ParseMode.HTML,
+                                  disable_web_page_preview=True,
                                   timeout=10)
 
     # This method is called if ANY button is pressed
@@ -150,7 +151,9 @@ class LFTableBot():
                         message_id=message_id,
                         text=src.messages.main_menu_message(),
                         parse_mode=ParseMode.HTML,
-                        reply_markup=src.keyboards.main_menu_keyboard(), timeout=10)
+                        reply_markup=src.keyboards.main_menu_keyboard(),
+                        disable_web_page_preview=True,
+                        timeout=10)
 
         # Menus for specializations
         elif callback in ['pravo_menu', 'ek_polit_menu', 'mag_menu']:
@@ -180,7 +183,9 @@ class LFTableBot():
                         message_id=message_id,
                         text=src.messages.main_menu_message(),
                         parse_mode=ParseMode.HTML,
-                        reply_markup=keyboard, timeout=10)
+                        reply_markup=keyboard,
+                        disable_web_page_preview=True,
+                        timeout=10)
 
     def show_timetable_message(self, bot, callback, user_id, message_id, message_text):
 
