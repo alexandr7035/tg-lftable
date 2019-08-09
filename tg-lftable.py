@@ -142,6 +142,8 @@ class LFTableBot():
         # Message text (for 'notify' and 'refresh' buttons to detect timetable name)
         message_text = query.message.text
 
+        logger.debug('user ' + user_id + ' pressed button \'' + callback + '\'')
+
         # Main menu (for 'back' button)
         if callback == 'main_menu':
             bot.edit_message_text(chat_id=user_id,
