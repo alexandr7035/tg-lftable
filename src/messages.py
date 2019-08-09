@@ -1,12 +1,12 @@
-from src.static import *
 import random
 from datetime import datetime
 import src.gettime
+import src.static
 
 # Main menu text
 def main_menu_message():
 
-    text = '<b>LFTable v' + lftable_version + '</b>: быстрый доступ к расписанию занятий юридического факультета БГУ.\n\n'
+    text = '<b>LFTable v' + src.static.lftable_version + '</b>: быстрый доступ к расписанию занятий юридического факультета БГУ.\n\n'
 
     text += 'Источник: https://law.bsu.by\n'
     text += 'Информация об авторских правах юрфака: https://law.bsu.by/avtorskie-prava.html\n'

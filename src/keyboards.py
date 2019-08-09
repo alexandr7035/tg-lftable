@@ -1,8 +1,9 @@
-from src.static import *
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from src.db_classes import NotificationsDB
+import src.db_classes
+import src.static
 
-notifications_db = NotificationsDB()
+
+notifications_db = src.db_classes.NotificationsDB()
 
 
 def main_menu_keyboard():
@@ -15,38 +16,38 @@ def main_menu_keyboard():
     return(InlineKeyboardMarkup(keyboard))
 
 def pravo_keyboard():
-    pravo_c1.btn = InlineKeyboardButton('Правоведение - 1⃣', callback_data=pravo_c1.shortname)
-    pravo_c2.btn = InlineKeyboardButton('Правоведение - 2⃣', callback_data=pravo_c2.shortname)
-    pravo_c3.btn = InlineKeyboardButton('Правоведение - 3⃣', callback_data=pravo_c3.shortname)
-    pravo_c4.btn = InlineKeyboardButton('Правоведение - 4⃣', callback_data=pravo_c4.shortname)
+    pravo_c1_btn = InlineKeyboardButton('Правоведение - 1⃣', callback_data=src.static.pravo_c1.shortname)
+    pravo_c2_btn = InlineKeyboardButton('Правоведение - 2⃣', callback_data=src.static.pravo_c2.shortname)
+    pravo_c3_btn = InlineKeyboardButton('Правоведение - 3⃣', callback_data=src.static.pravo_c3.shortname)
+    pravo_c4_btn = InlineKeyboardButton('Правоведение - 4⃣', callback_data=src.static.pravo_c4.shortname)
     back_button = InlineKeyboardButton('⬅️ Назад', callback_data='main_menu')
 
-    keyboard = [[pravo_c1.btn, pravo_c2.btn],
-                [pravo_c3.btn, pravo_c4.btn],
+    keyboard = [[pravo_c1_btn, pravo_c2_btn],
+                [pravo_c3_btn, pravo_c4_btn],
                 [back_button]]
 
     return(InlineKeyboardMarkup(keyboard))
 
 def ek_polit_keyboard():
-    ek_polit_c1.btn = InlineKeyboardButton('Эк. право и политология - 1⃣', callback_data=ek_polit_c1.shortname)
-    ek_polit_c2.btn = InlineKeyboardButton('Эк. право и политология - 2⃣', callback_data=ek_polit_c2.shortname)
-    ek_polit_c3.btn = InlineKeyboardButton('Эк. право и политология - 3⃣', callback_data=ek_polit_c3.shortname)
-    ek_polit_c4.btn = InlineKeyboardButton('Эк. право и политология - 4⃣', callback_data=ek_polit_c4.shortname)
+    ek_polit_c1_btn = InlineKeyboardButton('Эк. право и политология - 1⃣', callback_data=src.static.ek_polit_c1.shortname)
+    ek_polit_c2_btn = InlineKeyboardButton('Эк. право и политология - 2⃣', callback_data=src.static.ek_polit_c2.shortname)
+    ek_polit_c3_btn = InlineKeyboardButton('Эк. право и политология - 3⃣', callback_data=src.static.ek_polit_c3.shortname)
+    ek_polit_c4_btn = InlineKeyboardButton('Эк. право и политология - 4⃣', callback_data=src.static.ek_polit_c4.shortname)
     back_button = InlineKeyboardButton('⬅️ Назад', callback_data='main_menu')
 
-    keyboard = [[ek_polit_c1.btn, ek_polit_c2.btn],
-                [ek_polit_c3.btn, ek_polit_c4.btn],
+    keyboard = [[ek_polit_c1_btn, ek_polit_c2_btn],
+                [ek_polit_c3_btn, ek_polit_c4_btn],
                 [back_button]]
 
     return(InlineKeyboardMarkup(keyboard))
 
 def mag_keyboard():
 
-    mag_c1.btn = InlineKeyboardButton('Магистратура - 1⃣', callback_data=mag_c1.shortname)
-    mag_c2.btn = InlineKeyboardButton('Магистратура - 2⃣', callback_data=mag_c2.shortname)
+    mag_c1_btn = InlineKeyboardButton('Магистратура - 1⃣', callback_data=src.static.mag_c1.shortname)
+    mag_c2_btn = InlineKeyboardButton('Магистратура - 2⃣', callback_data=src.static.mag_c2.shortname)
     back_button = InlineKeyboardButton('⬅️ Назад', callback_data='main_menu')
 
-    keyboard = [[mag_c1.btn, mag_c2.btn],
+    keyboard = [[mag_c1_btn, mag_c2_btn],
                 [back_button]]
 
     return(InlineKeyboardMarkup(keyboard))
