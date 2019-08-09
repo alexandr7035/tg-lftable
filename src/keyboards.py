@@ -29,10 +29,10 @@ def pravo_keyboard():
     return(InlineKeyboardMarkup(keyboard))
 
 def ek_polit_keyboard():
-    ek_polit_c1_btn = InlineKeyboardButton('Эк. право и политология - 1⃣', callback_data=src.static.ek_polit_c1.shortname)
-    ek_polit_c2_btn = InlineKeyboardButton('Эк. право и политология - 2⃣', callback_data=src.static.ek_polit_c2.shortname)
-    ek_polit_c3_btn = InlineKeyboardButton('Эк. право и политология - 3⃣', callback_data=src.static.ek_polit_c3.shortname)
-    ek_polit_c4_btn = InlineKeyboardButton('Эк. право и политология - 4⃣', callback_data=src.static.ek_polit_c4.shortname)
+    ek_polit_c1_btn = InlineKeyboardButton('Эк. и полит. - 1⃣', callback_data=src.static.ek_polit_c1.shortname)
+    ek_polit_c2_btn = InlineKeyboardButton('Эк. и полит. - 2⃣', callback_data=src.static.ek_polit_c2.shortname)
+    ek_polit_c3_btn = InlineKeyboardButton('Эк. и полит. - 3⃣', callback_data=src.static.ek_polit_c3.shortname)
+    ek_polit_c4_btn = InlineKeyboardButton('Эк. и полит. - 4⃣', callback_data=src.static.ek_polit_c4.shortname)
     back_button = InlineKeyboardButton('⬅️ Назад', callback_data='main_menu')
 
     keyboard = [[ek_polit_c1_btn, ek_polit_c2_btn],
