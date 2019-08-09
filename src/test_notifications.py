@@ -11,6 +11,7 @@ import src.db_classes
 import src.static
 os.chdir('..')
 
+# Writes old times to times db on start to artificially trigger notifications
 def test_notifications():
 	
 	timesdb = src.db_classes.TimesDB()

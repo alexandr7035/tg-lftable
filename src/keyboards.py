@@ -53,10 +53,10 @@ def mag_keyboard():
     return(InlineKeyboardMarkup(keyboard))
 
 
-# Menu for specific timetable. One button returns to main menu, one refreshes date and time info.
+# Keyboard for specific timetable.
 def answer_keyboard(ttb, user_id):
 
-    # Button to refresh current answer menu (so you don't have to come back to main menu).
+    # Button to refresh current timetable message (so you don't have to come back to main menu).
     refresh_button = InlineKeyboardButton('🔄 Обновить страницу', callback_data='refresh')
 
     # For notify function. Adds info to DB.
@@ -70,7 +70,7 @@ def answer_keyboard(ttb, user_id):
     # Button to put user id into db in order to notify him when the timetable is updated.
     notify_button = InlineKeyboardButton(notify_text, callback_data='notify')
 
-    # Set back_callback to send user to previous menu 
+    # Set back_callback to send user to previous menu
     if ttb.shortname.startswith('pravo'):
         back_callback = 'pravo_menu'
     elif ttb.shortname.startswith('mag'):

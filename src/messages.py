@@ -3,7 +3,7 @@ from datetime import datetime
 import src.gettime
 import src.static
 
-# Main menu text
+
 def main_menu_message():
 
     text = '<b>LFTable v' + src.static.lftable_version + '</b>: быстрый доступ к расписанию занятий юридического факультета БГУ.\n\n'
@@ -29,7 +29,6 @@ def main_menu_message():
 
     return(text)
 
-
 def ttb_message(ttb):
     # Get the timetable's "mtime"
     ttb_datetime = src.gettime.ttb_gettime(ttb)
@@ -37,7 +36,6 @@ def ttb_message(ttb):
     # Change date to necessary format.
     update_time = ttb_datetime.strftime('%H:%M')
     update_date = ttb_datetime.strftime('%d.%m.%Y')
-
 
     # Form the message's text
     text = '<b>' + ttb.name + '</b>\n\n'
@@ -54,8 +52,6 @@ def ttb_message(ttb):
     # Return this text
     return(text)
 
-
-# update_time must be a datetime object
 def notification_message(ttb, update_time):
     text = '🔔 Обновлено расписание <b>"' + ttb.name + '". 🔔</b>\n'
     text += 'Дата обновления: ' + update_time.strftime('%d.%m.%Y') + '\n'

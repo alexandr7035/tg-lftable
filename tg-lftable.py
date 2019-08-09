@@ -26,11 +26,11 @@ from src.logger import *
 class LFTableBot():
     def __init__(self):
 
-        # Start message
         logger.info("-")
         logger.info("the program was STARTED now")
 
         # Import src/tokens.py
+        # There should be 2 variables (token strings): 'develop' and 'release'
         try:
             import src.tokens
         except ImportError:
@@ -39,13 +39,17 @@ class LFTableBot():
             sys.exit()
 
         # Change directory to the one in wich the script is located
+        # This is necessary in order to correctly create 'db/' and 'log/' directories
         os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
+        # Objects to access the databases
         self.timesdb = src.db_classes.TimesDB()
         self.notificationsdb = src.db_classes.NotificationsDB()
         self.statisticsdb = src.db_classes.StatisticsDB()
 
+        # Create necessary directories and files
         self.prepare_workspace()
+        # Parse command-line arguments
         self.parse_arguments()
 
     # This method creates necessary directories and files
@@ -82,10 +86,13 @@ class LFTableBot():
 
         parser = argparse.ArgumentParser(description="tg-lftable: telegram bot which provides an easy way to get the law faculty's timetable (BSU).")
 
+        # See src/logger.py (log_exceptions() function)
         parser.add_argument('--log-exceptions', action='store_true')
+        # See src/test_notifications.py (test_notifications() function)
         parser.add_argument('--test-notifications', action='store_true')
 
         required_arg = parser.add_argument_group(title='required arguments')
+        # Responsible for choosing a token (either 'develop' or 'release')
         required_arg.add_argument('--mode',
                                   type=str,
                                   help='Either \'release\' or \'development\' string. The bot starts with the corresponding token',
@@ -103,14 +110,14 @@ class LFTableBot():
             print("Invalid mode specified. Use either 'release' or 'develop' string.' Exit.")
             sys.exit()
 
-        # get token depending on --mode parameter
+        # Get token depending on --mode parameter
         try:
             self.bot_token = getattr(src.tokens, self.args.mode)
         except AttributeError:
             logger.critical("no '" + self.args.mode + "' token string variable in tokens.py file, exit")
             print("no '" + self.args.mode + "' token string variable in tokens.py file, exit")
 
-        # Log exceptions
+        # Log exceptions (see src/logger.py)
         if self.args.log_exceptions == True:
             log_exceptions()
 
@@ -121,6 +128,7 @@ class LFTableBot():
                                   parse_mode=ParseMode.HTML,
                                   timeout=10)
 
+    # This method is called if ANY button is pressed
     def handle_button_click(self, bot, update):
         query = update.callback_query
 
@@ -134,6 +142,7 @@ class LFTableBot():
         # Message text (for 'notify' and 'refresh' buttons to detect timetable name)
         message_text = query.message.text
 
+        # Main menu (for 'back' button)
         if callback == 'main_menu':
             bot.edit_message_text(chat_id=user_id,
                         message_id=message_id,
@@ -141,48 +150,21 @@ class LFTableBot():
                         parse_mode=ParseMode.HTML,
                         reply_markup=src.keyboards.main_menu_keyboard(), timeout=10)
 
+        # Menus for specializations
         elif callback in ['pravo_menu', 'ek_polit_menu', 'mag_menu']:
             self.show_timetable_menu(bot, callback, user_id, message_id)
 
+        # Messagess for certain timetables
         elif callback in ['pravo_c1', 'pravo_c2', 'pravo_c3', 'pravo_c4',
                           'ek_polit_c1', 'ek_polit_c2', 'ek_polit_c3', 'ek_polit_c4',
                         'mag_c1', 'mag_c2', 'refresh', 'notify']:
             self.show_timetable_message(bot, callback, user_id, message_id, message_text)
 
+        # Deletes notification message
         if callback == 'delete_notification':
             # Deletes notification message if 'delete' button is pressed.
             bot.delete_message(user_id, message_id)
-            # Write to log
             logger.info('user ' + str(user_id) + " deleted notification (message: " + str(query.message.message_id) + ")")
-
-
-    def show_timetable_message(self, bot, callback, user_id, message_id, message_text):
-
-        if callback in ['refresh', 'notify']:
-            # Detect the timetable checking first line of the ttb message
-            for ttb in src.static.all_timetables:
-                if message_text.split('\n')[0] == ttb.name:
-                    timetable_to_show = ttb
-        else:
-            timetable_to_show = getattr(src.static, callback)
-
-        # Handle notify button
-        if callback == 'notify':
-            self.notificationsdb.connect()
-            if not self.notificationsdb.check_if_user_notified(user_id, timetable_to_show.shortname):
-                self.notificationsdb.enable_notifications(user_id, timetable_to_show.shortname)
-                logger.info('user ' + user_id + " enabled notifications for the '" + timetable_to_show.shortname + "' timetable")
-            else:
-                self.notificationsdb.disable_notifications(user_id, timetable_to_show.shortname)
-                logger.info('user ' + user_id + " disabled notifications for the '" + timetable_to_show.shortname + "' timetable")
-            self.notificationsdb.close()
-
-        bot.edit_message_text(chat_id=user_id,
-                        message_id=message_id,
-                        text=src.messages.ttb_message(timetable_to_show),
-                        # Used for bold font
-                        parse_mode=ParseMode.HTML,
-                        reply_markup=src.keyboards.answer_keyboard(timetable_to_show, user_id), timeout=10)
 
     def show_timetable_menu(self, bot, callback, user_id, message_id):
         if callback == 'pravo_menu':
@@ -197,6 +179,37 @@ class LFTableBot():
                         text=src.messages.main_menu_message(),
                         parse_mode=ParseMode.HTML,
                         reply_markup=keyboard, timeout=10)
+
+    def show_timetable_message(self, bot, callback, user_id, message_id, message_text):
+
+        # If 'refresh' or 'notify' button is pressed the only way to detect timetable (to show this message again)
+        # is to parse message text
+        if callback in ['refresh', 'notify']:
+            # Detect the timetable checking first line of the timetable message
+            for ttb in src.static.all_timetables:
+                if message_text.split('\n')[0] == ttb.name:
+                    timetable_to_show = ttb
+        else:
+            timetable_to_show = getattr(src.static, callback)
+
+        # Handle notify button (write to db)s
+        if callback == 'notify':
+            self.notificationsdb.connect()
+            if not self.notificationsdb.check_if_user_notified(user_id, timetable_to_show.shortname):
+                self.notificationsdb.enable_notifications(user_id, timetable_to_show.shortname)
+                logger.info('user ' + user_id + " enabled notifications for the '" + timetable_to_show.shortname + "' timetable")
+            else:
+                self.notificationsdb.disable_notifications(user_id, timetable_to_show.shortname)
+                logger.info('user ' + user_id + " disabled notifications for the '" + timetable_to_show.shortname + "' timetable")
+            self.notificationsdb.close()
+
+        bot.edit_message_text(chat_id=user_id,
+                        message_id=message_id,
+                        text=src.messages.ttb_message(timetable_to_show),
+                        parse_mode=ParseMode.HTML,
+                        reply_markup=src.keyboards.answer_keyboard(timetable_to_show, user_id), timeout=10)
+
+
 
     # A timejob for notifications
     def notifications_timejob(self, bot, job):
@@ -222,9 +235,9 @@ class LFTableBot():
             #+ from certain table in 'users.db'
             if dt_update_time > dt_old_update_time:
 
-                # Write to log
                 logger.info("'" + checking_ttb.shortname + "' timetable was updated at " + update_time)
 
+                # Get list of users who enabled notifications for this timetable
                 self.notificationsdb.connect()
                 users_to_notify = self.notificationsdb.get_notified_users(checking_ttb.shortname)
                 self.notificationsdb.close()
@@ -237,13 +250,11 @@ class LFTableBot():
                                          text=src.messages.notification_message(checking_ttb, dt_update_time),
                                          reply_markup=src.keyboards.notify_keyboard(),
                                          parse_mode=ParseMode.HTML)
+                    # If user blocked this bot & etc...
                     except Exception as e:
-                        print(e)
-                        # Write to log
                         logger.info("can't send '" + checking_ttb.shortname + "' notification to user " + user_id + ", skip")
                         continue
 
-                    # Write to log
                     logger.info("'" + checking_ttb.shortname + "' notification was sent to user " + user_id)
 
                     # A delay to prevent any spam control exceptions
@@ -267,9 +278,9 @@ class LFTableBot():
             self.timesdb.write_time(timetable.shortname, update_time)
         self.timesdb.close()
 
+        # Start notifcations test immediatly after the run if '--test-notificztions' option is specified
         if self.args.test_notifications == True:
             src.test_notifications.test_notifications()
-
 
         self.updater = Updater(self.bot_token)
         self.dispatcher = self.updater.dispatcher
