@@ -57,14 +57,14 @@ def mag_keyboard():
 def answer_keyboard(ttb, user_id):
 
     # Button to refresh current timetable message (so you don't have to come back to main menu).
-    refresh_button = InlineKeyboardButton('🔄 Обновить страницу', callback_data='refresh')
+    refresh_button = InlineKeyboardButton('🔄 Обновить информацию', callback_data='refresh')
 
     # For notify function. Adds info to DB.
     notifications_db.connect()
     if notifications_db.check_if_user_notified(user_id, ttb.shortname):
-        notify_text = u'🔕 Не уведомлять'
+        notify_text = u'🔕 Отключить уведомления'
     else:
-        notify_text = u'🔔 Уведомлять'
+        notify_text = u'🔔 Включить уведомления'
     notifications_db.close()
 
     # Button to put user id into db in order to notify him when the timetable is updated.
@@ -78,7 +78,7 @@ def answer_keyboard(ttb, user_id):
     elif ttb.shortname.startswith('ek_polit'):
         back_callback = 'ek_polit_menu'
 
-    back_button = InlineKeyboardButton('⬅️ Назад в меню', callback_data=back_callback)
+    back_button = InlineKeyboardButton('⬅️ Назад', callback_data=back_callback)
 
     keyboard = [[refresh_button],
                 [notify_button],

@@ -48,7 +48,7 @@ def timetable_message(ttb):
 
     # To fix badrequest error.
     text += '-------------------\n'
-    text += 'Страница обновлена: ' + datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+    text += 'Информация обновлена: ' + datetime.now().strftime("%d.%m.%Y %H:%M:%S")
 
     # Return this text
     return(text)
