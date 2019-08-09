@@ -5,8 +5,6 @@ import sys
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(1, '..')
 
-print(os.getcwd())
-
 import src.db_classes
 import src.static
 os.chdir('..')
