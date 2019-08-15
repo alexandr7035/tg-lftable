@@ -29,7 +29,7 @@ class TimesDB(CommonDB):
     def construct(self):
         self.cursor.execute('CREATE TABLE times (ttb, time)')
 
-        for timetable in all_timetables:
+        for timetable in src.static.all_timetables:
             self.cursor.execute('INSERT INTO times VALUES ("' + timetable.shortname + '", "")')
 
         self.connection.commit()
@@ -54,7 +54,7 @@ class NotificationsDB(CommonDB):
 
     # Creates necessary tables after db was created
     def construct(self):
-        for timetable in all_timetables:
+        for timetable in src.static.all_timetables:
             self.cursor.execute('CREATE TABLE ' + timetable.shortname + ' (users)')
         self.connection.commit()
 
