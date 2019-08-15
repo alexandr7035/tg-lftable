@@ -57,7 +57,7 @@ class LFTableBot():
 
         # Create directory for sqlite3 databases
         if not os.path.exists(src.static.db_dir):
-            os.mkdir(db_dir)
+            os.mkdir(src.static.db_dir)
 
         # Create databases. See db_classes.py
         if not os.path.isfile(src.static.timesdb_path):
