@@ -90,7 +90,7 @@ def answer_keyboard(ttb, user_id):
 # Keyboard for a notification. Only one button to delete message.
 def notify_keyboard():
 
-    del_notification_button = InlineKeyboardButton('Скрыть уведомление',  callback_data='delete_notification')
+    del_notification_button = InlineKeyboardButton('🧹 Скрыть уведомление',  callback_data='delete_notification')
 
     keyboard = [[del_notification_button]]
 
