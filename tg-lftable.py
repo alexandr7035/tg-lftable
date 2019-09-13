@@ -123,6 +123,17 @@ class LFTableBot():
 
     # Sends main menu on '/start' command
     def handle_start_command(self, bot, update):
+
+        user_id = update.message.chat_id
+
+        # Add a new user to statistics.db
+        self.statisticsdb.connect()
+        if user_id not in self.statisticsdb.get_unique_users():
+            self.statisticsdb.add_unique_user(user_id)
+            logger.info('add unique user ' + str(user_id))
+        self.statisticsdb.close()
+
+
         update.message.reply_text(src.messages.main_menu_message(),
                                   reply_markup=src.keyboards.main_menu_keyboard(),
                                   parse_mode=ParseMode.HTML,
