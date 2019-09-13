@@ -3,7 +3,7 @@ import src.static
 
 # TimesDB, NotificaitonsDB and StatisticsDB are inherited from this
 class CommonDB():
-	# Used to set the path to a database
+    # Used to set the path to a database
     def __init__(self, db_path):
         self.db_path = db_path
 
@@ -22,7 +22,7 @@ class CommonDB():
 # Stores update time of each timetable
 class TimesDB(CommonDB):
     def __init__(self):
-		# Set path to the db
+        # Set path to the db
         super().__init__(src.static.timesdb_path)
 
     # Creates necessary tables after db was created
@@ -49,7 +49,7 @@ class TimesDB(CommonDB):
 # Stores user_id's of those who enabled notifications
 class NotificationsDB(CommonDB):
     def __init__(self):
-		# Set path to the db
+        # Set path to the db
         super().__init__(src.static.notificationsdb_path)
 
     # Creates necessary tables after db was created
@@ -92,7 +92,7 @@ class NotificationsDB(CommonDB):
 
 class StatisticsDB(CommonDB):
     def __init__(self):
-		# Set path to the db
+        # Set path to the db
         super().__init__(src.static.statisticsdb_path)
 
     # Creates necessary tables after db was created
@@ -112,6 +112,6 @@ class StatisticsDB(CommonDB):
         return(unique_users)
 
     # Add a new user to this database (when '/start' command is sent)
-    def add_uniq_user(self, user_id):
+    def add_unique_user(self, user_id):
         self.cursor.execute('INSERT INTO uniq_users VALUES (?)', (user_id,))
         self.connection.commit()
