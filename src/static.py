@@ -1,5 +1,5 @@
 # Version number
-lftable_version = '4.2.1'
+lftable_version = '4.3'
 
 # Python module with tokens
 tokens_file = 'src/tokens.py'

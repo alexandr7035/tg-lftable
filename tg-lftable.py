@@ -176,11 +176,16 @@ class LFTableBot():
                         'mag_c1', 'mag_c2', 'refresh', 'notify']:
             self.show_timetable_message(bot, callback, user_id, message_id, message_text)
 
-        # Deletes notification message
+        # Since we cannot delete messages older than 48 hours,
+        # the "Delete notification" button now just sends the main menu
         if callback == 'delete_notification':
-            # Deletes notification message if 'delete' button is pressed.
-            bot.delete_message(user_id, message_id)
-            logger.info('user ' + str(user_id) + " deleted notification (message: " + str(query.message.message_id) + ")")
+            logger.info('user ' + str(user_id) + " used 'show_menu_button' from a notification (message: " + str(query.message.message_id) + ")")
+            bot.send_message(chat_id=user_id,
+                             text=src.messages.main_menu_message(),
+                             reply_markup=src.keyboards.main_menu_keyboard(),
+                             disable_web_page_preview=True,
+                             parse_mode=ParseMode.HTML)
+
 
     def show_timetable_menu(self, bot, callback, user_id, message_id):
         if callback == 'pravo_menu':

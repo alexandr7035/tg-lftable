@@ -7,9 +7,9 @@ notifications_db = src.db_classes.NotificationsDB()
 
 
 def main_menu_keyboard():
-    pravo_btn = InlineKeyboardButton('📌 Правоведение', callback_data='pravo_menu')
-    ek_polit_btn = InlineKeyboardButton('📌 Эк. право и политология', callback_data='ek_polit_menu')
-    mag_btn = InlineKeyboardButton('📌 Магистратура', callback_data='mag_menu')
+    pravo_btn = InlineKeyboardButton('📕 Правоведение', callback_data='pravo_menu')
+    ek_polit_btn = InlineKeyboardButton('📗 Эк. право и политология', callback_data='ek_polit_menu')
+    mag_btn = InlineKeyboardButton('📒 Магистратура', callback_data='mag_menu')
 
     keyboard = [[pravo_btn], [ek_polit_btn], [mag_btn]]
 
@@ -87,11 +87,13 @@ def answer_keyboard(ttb, user_id):
     return(InlineKeyboardMarkup(keyboard))
 
 
-# Keyboard for a notification. Only one button to delete message.
+# Keyboard for a notification. Only one button to show menu again.
 def notify_keyboard():
 
-    del_notification_button = InlineKeyboardButton('🧹 Скрыть уведомление',  callback_data='delete_notification')
+    # MESSAGE IF NOT DELETED FROM THE RELEASE v4.3
+    # CALLBACK STRING SHOULD BE CHANGED LATER (saved for backward compatibility)
+    show_menu_button = InlineKeyboardButton('📚 Показать меню',  callback_data='delete_notification')
 
-    keyboard = [[del_notification_button]]
+    keyboard = [[show_menu_button]]
 
     return(InlineKeyboardMarkup(keyboard))
