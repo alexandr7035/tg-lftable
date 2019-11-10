@@ -87,11 +87,13 @@ def answer_keyboard(ttb, user_id):
     return(InlineKeyboardMarkup(keyboard))
 
 
-# Keyboard for a notification. Only one button to delete message.
+# Keyboard for a notification. Only one button to show menu again.
 def notify_keyboard():
 
-    del_notification_button = InlineKeyboardButton('🧹 Скрыть уведомление',  callback_data='delete_notification')
+    # MESSAGE IF NOT DELETED FROM THE RELEASE v4.3
+    # CALLBACK STRING SHOULD BE CHANGED LATER (saved for backward compatibility)
+    show_menu_button = InlineKeyboardButton('📚 Показать меню',  callback_data='delete_notification')
 
-    keyboard = [[del_notification_button]]
+    keyboard = [[show_menu_button]]
 
     return(InlineKeyboardMarkup(keyboard))
