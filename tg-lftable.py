@@ -179,6 +179,7 @@ class LFTableBot():
         # Since we cannot delete messages older than 48 hours,
         # the "Delete notification" button now just sends the main menu
         if callback == 'delete_notification':
+            logger.info('user ' + str(user_id) + " used 'show_menu_button' from a notification (message: " + str(query.message.message_id) + ")")
             bot.send_message(chat_id=user_id,
                              text=src.messages.main_menu_message(),
                              reply_markup=src.keyboards.main_menu_keyboard(),
