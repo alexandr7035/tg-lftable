@@ -122,7 +122,7 @@ class LFTableBot():
             log_exceptions()
 
     # Sends main menu on '/start' command
-    def handle_start_command(self, bot, update):
+    def handle_start_command(self, update, context):
 
         user_id = update.message.chat_id
 
@@ -305,7 +305,7 @@ class LFTableBot():
         if self.args.test_notifications == True:
             src.test_notifications.test_notifications()
 
-        self.updater = Updater(self.bot_token)
+        self.updater = Updater(self.bot_token, use_context=True)
         self.dispatcher = self.updater.dispatcher
 
          # Run timejob for notificatins
