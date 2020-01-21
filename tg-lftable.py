@@ -235,7 +235,7 @@ class LFTableBot():
 
 
     # A timejob for notifications
-    def notifications_timejob(self, bot, job):
+    def notifications_timejob(self, context):
 
         # Connect to the times.db
         self.timesdb.connect()
@@ -269,7 +269,7 @@ class LFTableBot():
                 for user_id in users_to_notify:
 
                     try:
-                        bot.send_message(chat_id=user_id,
+                        context.bot.send_message(chat_id=user_id,
                                          text=src.messages.notification_message(checking_ttb, dt_update_time),
                                          reply_markup=src.keyboards.notify_keyboard(),
                                          parse_mode=ParseMode.HTML)
