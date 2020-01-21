@@ -309,8 +309,9 @@ class LFTableBot():
         self.dispatcher = self.updater.dispatcher
 
          # Run timejob for notificatins
+         # First run within 5 seconds after the start
         job = self.updater.job_queue
-        job.run_repeating(self.notifications_timejob, interval = src.static.check_updates_interval, first=0)
+        job.run_repeating(self.notifications_timejob, interval = src.static.check_updates_interval, first=5)
 
         self.dispatcher.add_handler(CommandHandler('start', self.handle_start_command))
         self.dispatcher.add_handler(CallbackQueryHandler(self.handle_button_click))
