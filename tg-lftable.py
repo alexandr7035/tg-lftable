@@ -141,7 +141,7 @@ class LFTableBot():
                                   timeout=10)
 
     # This method is called if ANY button is pressed
-    def handle_button_click(self, bot, update):
+    def handle_button_click(self, update, context):
         query = update.callback_query
 
         # Each button has its own callback, see src/keyboards.py
@@ -158,7 +158,7 @@ class LFTableBot():
 
         # Main menu (for 'back' button)
         if callback == 'main_menu':
-            bot.edit_message_text(chat_id=user_id,
+            context.bot.edit_message_text(chat_id=user_id,
                         message_id=message_id,
                         text=src.messages.main_menu_message(),
                         parse_mode=ParseMode.HTML,
@@ -168,19 +168,19 @@ class LFTableBot():
 
         # Menus for specializations
         elif callback in ['pravo_menu', 'ek_polit_menu', 'mag_menu']:
-            self.show_timetable_menu(bot, callback, user_id, message_id)
+            self.show_timetable_menu(context.bot, callback, user_id, message_id)
 
         # Messagess for certain timetables
         elif callback in ['pravo_c1', 'pravo_c2', 'pravo_c3', 'pravo_c4',
                           'ek_polit_c1', 'ek_polit_c2', 'ek_polit_c3', 'ek_polit_c4',
                         'mag_c1', 'mag_c2', 'refresh', 'notify']:
-            self.show_timetable_message(bot, callback, user_id, message_id, message_text)
+            self.show_timetable_message(context.bot, callback, user_id, message_id, message_text)
 
         # Since we cannot delete messages older than 48 hours,
         # the "Delete notification" button now just sends the main menu
         if callback == 'delete_notification':
             logger.info('user ' + str(user_id) + " used 'show_menu_button' from a notification (message: " + str(query.message.message_id) + ")")
-            bot.send_message(chat_id=user_id,
+            context.bot.send_message(chat_id=user_id,
                              text=src.messages.main_menu_message(),
                              reply_markup=src.keyboards.main_menu_keyboard(),
                              disable_web_page_preview=True,
