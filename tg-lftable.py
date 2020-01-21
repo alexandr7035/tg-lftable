@@ -122,7 +122,7 @@ class LFTableBot():
             log_exceptions()
 
     # Sends main menu on '/start' command
-    def handle_start_command(self, bot, update):
+    def handle_start_command(self, update, context):
 
         user_id = update.message.chat_id
 
@@ -141,7 +141,7 @@ class LFTableBot():
                                   timeout=10)
 
     # This method is called if ANY button is pressed
-    def handle_button_click(self, bot, update):
+    def handle_button_click(self, update, context):
         query = update.callback_query
 
         # Each button has its own callback, see src/keyboards.py
@@ -158,7 +158,7 @@ class LFTableBot():
 
         # Main menu (for 'back' button)
         if callback == 'main_menu':
-            bot.edit_message_text(chat_id=user_id,
+            context.bot.edit_message_text(chat_id=user_id,
                         message_id=message_id,
                         text=src.messages.main_menu_message(),
                         parse_mode=ParseMode.HTML,
@@ -168,19 +168,19 @@ class LFTableBot():
 
         # Menus for specializations
         elif callback in ['pravo_menu', 'ek_polit_menu', 'mag_menu']:
-            self.show_timetable_menu(bot, callback, user_id, message_id)
+            self.show_timetable_menu(context.bot, callback, user_id, message_id)
 
         # Messagess for certain timetables
         elif callback in ['pravo_c1', 'pravo_c2', 'pravo_c3', 'pravo_c4',
                           'ek_polit_c1', 'ek_polit_c2', 'ek_polit_c3', 'ek_polit_c4',
                         'mag_c1', 'mag_c2', 'refresh', 'notify']:
-            self.show_timetable_message(bot, callback, user_id, message_id, message_text)
+            self.show_timetable_message(context.bot, callback, user_id, message_id, message_text)
 
         # Since we cannot delete messages older than 48 hours,
         # the "Delete notification" button now just sends the main menu
         if callback == 'delete_notification':
             logger.info('user ' + str(user_id) + " used 'show_menu_button' from a notification (message: " + str(query.message.message_id) + ")")
-            bot.send_message(chat_id=user_id,
+            context.bot.send_message(chat_id=user_id,
                              text=src.messages.main_menu_message(),
                              reply_markup=src.keyboards.main_menu_keyboard(),
                              disable_web_page_preview=True,
@@ -235,7 +235,7 @@ class LFTableBot():
 
 
     # A timejob for notifications
-    def notifications_timejob(self, bot, job):
+    def notifications_timejob(self, context):
 
         # Connect to the times.db
         self.timesdb.connect()
@@ -269,7 +269,7 @@ class LFTableBot():
                 for user_id in users_to_notify:
 
                     try:
-                        bot.send_message(chat_id=user_id,
+                        context.bot.send_message(chat_id=user_id,
                                          text=src.messages.notification_message(checking_ttb, dt_update_time),
                                          reply_markup=src.keyboards.notify_keyboard(),
                                          parse_mode=ParseMode.HTML)
@@ -305,12 +305,13 @@ class LFTableBot():
         if self.args.test_notifications == True:
             src.test_notifications.test_notifications()
 
-        self.updater = Updater(self.bot_token)
+        self.updater = Updater(self.bot_token, use_context=True)
         self.dispatcher = self.updater.dispatcher
 
          # Run timejob for notificatins
+         # First run within 5 seconds after the start
         job = self.updater.job_queue
-        job.run_repeating(self.notifications_timejob, interval = src.static.check_updates_interval, first=0)
+        job.run_repeating(self.notifications_timejob, interval = src.static.check_updates_interval, first=5)
 
         self.dispatcher.add_handler(CommandHandler('start', self.handle_start_command))
         self.dispatcher.add_handler(CallbackQueryHandler(self.handle_button_click))
