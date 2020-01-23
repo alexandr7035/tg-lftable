@@ -7,7 +7,7 @@ import sqlite3
 import argparse
 from datetime import datetime
 
-from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, JobQueue
+from telegram.ext import Updater, CommandHandler, MessageHandler, CallbackQueryHandler, JobQueue, Filters
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 
 # Import all local modules, see 'src/' directory
@@ -52,6 +52,7 @@ class LFTableBot():
         # Parse command-line arguments
         self.parse_arguments()
 
+
     # This method creates necessary directories and files
     def prepare_workspace(self):
 
@@ -80,6 +81,7 @@ class LFTableBot():
             self.statisticsdb.close()
 
             logger.info("'" + src.static.statisticsdb_path + "' database was created")
+
 
     # Parse command-line arguments
     def parse_arguments(self):
@@ -121,6 +123,7 @@ class LFTableBot():
         if self.args.log_exceptions == True:
             log_exceptions()
 
+
     # Sends main menu on '/start' command
     def handle_start_command(self, update, context):
 
@@ -133,12 +136,22 @@ class LFTableBot():
             logger.info('add unique user ' + str(user_id))
         self.statisticsdb.close()
 
-
         update.message.reply_text(src.messages.main_menu_message(),
                                   reply_markup=src.keyboards.main_menu_keyboard(),
                                   parse_mode=ParseMode.HTML,
                                   disable_web_page_preview=True,
                                   timeout=10)
+
+
+    # Handle any received text message EXCEPT telegram commands -
+    # (messages started with '/' like '/start').
+    # Now just send info message how to start the bot.
+    def handle_text_commands(self, update, context):
+        user_id = update.message.chat_id
+
+        context.bot.send_message(chat_id=user_id,
+                                 text=src.messages.no_such_command_message())
+
 
     # This method is called if ANY button is pressed
     def handle_button_click(self, update, context):
@@ -203,6 +216,7 @@ class LFTableBot():
                         disable_web_page_preview=True,
                         timeout=10)
 
+
     def show_timetable_message(self, bot, callback, user_id, message_id, message_text):
 
         # If 'refresh' or 'notify' button is pressed the only way to detect timetable (to show this message again)
@@ -231,7 +245,6 @@ class LFTableBot():
                         text=src.messages.timetable_message(timetable_to_show),
                         parse_mode=ParseMode.HTML,
                         reply_markup=src.keyboards.answer_keyboard(timetable_to_show, user_id), timeout=10)
-
 
 
     # A timejob for notifications
@@ -292,6 +305,7 @@ class LFTableBot():
         # Close 'times.db' until next check.
         self.timesdb.close()
 
+
     def start(self):
         # Sets times to the 'times.db' immediately after the run WITHOUT notifiying users
         # This is to prevent late notifications if the bot was down for a long time
@@ -315,6 +329,7 @@ class LFTableBot():
 
         self.dispatcher.add_handler(CommandHandler('start', self.handle_start_command))
         self.dispatcher.add_handler(CallbackQueryHandler(self.handle_button_click))
+        self.dispatcher.add_handler(MessageHandler(Filters.text, self.handle_text_commands))
 
         # Checking for updates.
         self.updater.start_polling(clean=False)
