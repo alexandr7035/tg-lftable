@@ -129,6 +129,8 @@ class LFTableBot():
 
         user_id = update.message.chat_id
 
+        logger.info('user ' + str(user_id) + ' entered /start command')
+
         # Add a new user to statistics.db
         self.statisticsdb.connect()
         if user_id not in self.statisticsdb.get_unique_users():
@@ -141,13 +143,15 @@ class LFTableBot():
                                   parse_mode=ParseMode.HTML,
                                   disable_web_page_preview=True,
                                   timeout=10)
-
+        
 
     # Handle any received text message EXCEPT telegram commands -
     # (messages started with '/' like '/start').
     # Now just send info message how to start the bot.
     def handle_text_commands(self, update, context):
         user_id = update.message.chat_id
+
+        logger.info('user ' + str(user_id) + ' entered \'' + update.message.text + '\' command')
 
         context.bot.send_message(chat_id=user_id,
                                  text=src.messages.no_such_command_message())
