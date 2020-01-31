@@ -14,9 +14,10 @@ timesdb_path = db_dir + 'times.db'
 statisticsdb_path = db_dir + 'statistics.db'
 
 
-# Intervals for update checks and notifications(s).
+# Intervals for update checks and notifications (s).
 check_updates_interval = 120
 send_message_interval = 0.05
+max_request_delay = 5
 
 # Class for storing timetable's options.
 class TTBS():

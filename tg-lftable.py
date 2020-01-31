@@ -5,6 +5,7 @@ import sys
 import time
 import sqlite3
 import argparse
+import pytz
 from datetime import datetime
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, CallbackQueryHandler, JobQueue, Filters
@@ -146,14 +147,33 @@ class LFTableBot():
         
 
     # Handle any received text message EXCEPT telegram commands -
-    # (messages started with '/' like '/start').
+    # ( except messages started with '/' like '/start').
     # Now just send info message how to start the bot.
     def handle_text_commands(self, update, context):
         user_id = update.message.chat_id
 
-        logger.info('user ' + str(user_id) + ' entered \'' + update.message.text + '\' command')
+        # That's UTC time!
+        request_date = update.message.date
 
-        context.bot.send_message(chat_id=user_id,
+        # Convert it to GMT+3
+        old_tz = pytz.timezone('Europe/London')
+        new_tz = pytz.timezone('Europe/Minsk')
+        gmt3_request_date = old_tz.localize(request_date).astimezone(new_tz)
+        
+        # Get unix timestamp from gmt3_request_date)
+        gmt3_request_unixtime = time.mktime(gmt3_request_date.timetuple())
+
+        # Compare current time with request time 
+        # and decide whether to hadnle the request
+        # !!!! SKIP all requests older than 'src.static.max_request_delay'
+        request_delay = time.time() - gmt3_request_unixtime
+        if request_delay >= src.static.max_request_delay:
+            logger.info('skip old command \'' + update.message.text + '\' from user ' + str(user_id) + ' (delay: ' + str(request_delay) + 's)')
+            # EXIT
+            return
+        else: 
+            logger.info('user ' + str(user_id) + ' entered \'' + update.message.text + '\' command')
+            context.bot.send_message(chat_id=user_id,
                                  text=src.messages.no_such_command_message())
 
 
