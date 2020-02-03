@@ -10,8 +10,9 @@ def main_menu_keyboard():
     pravo_btn = InlineKeyboardButton('📕 Правоведение', callback_data='pravo_menu')
     ek_polit_btn = InlineKeyboardButton('📗 Эк. право и политология', callback_data='ek_polit_menu')
     mag_btn = InlineKeyboardButton('📒 Магистратура', callback_data='mag_menu')
+    ekz_zachet_btn = InlineKeyboardButton('☠️ Зачеты и экзамены', callback_data='ekz_zachet_menu')
 
-    keyboard = [[pravo_btn], [ek_polit_btn], [mag_btn]]
+    keyboard = [[pravo_btn], [ek_polit_btn], [mag_btn], [ekz_zachet_btn]]
 
     return(InlineKeyboardMarkup(keyboard))
 
