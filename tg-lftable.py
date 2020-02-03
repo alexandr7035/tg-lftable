@@ -124,36 +124,13 @@ class LFTableBot():
         if self.args.log_exceptions == True:
             log_exceptions()
 
-
-    # Sends main menu on '/start' command
-    def handle_start_command(self, update, context):
-
-        user_id = update.message.chat_id
-
-        logger.info('user ' + str(user_id) + ' entered /start command')
-
-        # Add a new user to statistics.db
-        self.statisticsdb.connect()
-        if user_id not in self.statisticsdb.get_unique_users():
-            self.statisticsdb.add_unique_user(user_id)
-            logger.info('add unique user ' + str(user_id))
-        self.statisticsdb.close()
-
-        update.message.reply_text(src.messages.main_menu_message(),
-                                  reply_markup=src.keyboards.main_menu_keyboard(),
-                                  parse_mode=ParseMode.HTML,
-                                  disable_web_page_preview=True,
-                                  timeout=10)
-        
-
-    # Handle any received text message EXCEPT telegram commands -
-    # ( except messages started with '/' like '/start').
-    # Now just send info message how to start the bot.
-    def handle_text_commands(self, update, context):
-        user_id = update.message.chat_id
-
-        # That's UTC time!
-        request_date = update.message.date
+    # Receives 'update.message.date' in pure form
+    # Compares current time with request time 
+    # True, if the differance is less than or equal to 'src.static.max_request_delay'
+    # Used in command and message handlers 
+    #+ to skip old requests if bot was down for some time to prevent spam
+    # TRUE IF REQUEST IS LATE !!!
+    def check_if_request_late(self, request_date):
 
         # Convert it to GMT+3
         old_tz = pytz.timezone('Europe/London')
@@ -164,13 +141,51 @@ class LFTableBot():
         gmt3_request_unixtime = time.mktime(gmt3_request_date.timetuple())
 
         # Compare current time with request time 
-        # and decide whether to hadnle the request
-        # !!!! SKIP all requests older than 'src.static.max_request_delay'
         request_delay = time.time() - gmt3_request_unixtime
         if request_delay >= src.static.max_request_delay:
-            logger.info('skip old command \'' + update.message.text + '\' from user ' + str(user_id) + ' (delay: ' + str(request_delay) + 's)')
+            return True
+        else:
+            return False
+
+
+    # Sends main menu on '/start' command
+    def handle_start_command(self, update, context):
+
+        user_id = update.message.chat_id
+
+        # Add a new user to statistics.db
+        self.statisticsdb.connect()
+        if user_id not in self.statisticsdb.get_unique_users():
+            self.statisticsdb.add_unique_user(user_id)
+            logger.info('add unique user ' + str(user_id))
+        self.statisticsdb.close()
+
+        # Skip late requests, see self.check_if_request_late metod
+        if self.check_if_request_late(update.message.date):
+            logger.info('skip old /start command from user ' + str(user_id))
+        # Handle the request
+        else:
+            logger.info('user ' + str(user_id) + ' entered /start command')
+
+            update.message.reply_text(src.messages.main_menu_message(),
+                            reply_markup=src.keyboards.main_menu_keyboard(),
+                            parse_mode=ParseMode.HTML,
+                            disable_web_page_preview=True,
+                            timeout=10)
+        
+
+    # Handle any received text message EXCEPT telegram commands -
+    # ( except messages started with '/' like '/start').
+    # Now just send info message how to start the bot.
+    def handle_text_commands(self, update, context):
+        user_id = update.message.chat_id
+        
+        # Skip late requests, see self.check_if_request_late metod
+        if self.check_if_request_late(update.message.date):
+            logger.info('skip old command \'' + update.message.text + '\' from user ' + str(user_id))
             # EXIT
             return
+        # Handle the request
         else: 
             logger.info('user ' + str(user_id) + ' entered \'' + update.message.text + '\' command')
             context.bot.send_message(chat_id=user_id,
