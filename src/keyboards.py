@@ -53,6 +53,14 @@ def mag_keyboard():
 
     return(InlineKeyboardMarkup(keyboard))
 
+def ekz_zachet_keyboard():
+    zachet_btn = InlineKeyboardButton('💀 Зачеты', callback_data='zachet_menu')
+    ekz_btn = InlineKeyboardButton('☠️ Экзамены', callback_data='ekz_menu')
+    back_button = InlineKeyboardButton('⬅️ Назад', callback_data='main_menu')
+
+    keyboard = [[zachet_btn], [ekz_btn], [back_button]]
+
+    return(InlineKeyboardMarkup(keyboard))
 
 # Keyboard for specific timetable.
 def answer_keyboard(ttb, user_id):
