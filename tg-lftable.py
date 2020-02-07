@@ -308,7 +308,14 @@ class LFTableBot():
         for checking_ttb in src.static.all_timetables:
 
             # Get ttb update time from law.bsu.by
-            update_time = src.gettime.ttb_gettime(checking_ttb).strftime('%d.%m.%Y %H:%M:%S')
+            # Use different gettime functions for ussual and credit/exam timetables. See src.gettime.py
+            if checking_ttb in src.static.credit_exam_timetables:
+                data = src.gettime.credit_ekzam_gettime(checking_ttb)
+                update_time = data['time'].strftime('%d.%m.%Y %H:%M:%S')
+                timetable_url = data['url']
+            else:
+                update_time = src.gettime.ttb_gettime(checking_ttb).strftime('%d.%m.%Y %H:%M:%S')
+                timetable_url = checking_ttb.url
 
             # Get old update time from db.
             old_update_time = self.timesdb.get_time(checking_ttb.shortname)
@@ -323,7 +330,7 @@ class LFTableBot():
             if dt_update_time > dt_old_update_time:
 
                 logger.info("'" + checking_ttb.shortname + "' timetable was updated at " + update_time)
-
+                
                 # Get list of users who enabled notifications for this timetable
                 self.notificationsdb.connect()
                 users_to_notify = self.notificationsdb.get_notified_users(checking_ttb.shortname)
@@ -334,7 +341,7 @@ class LFTableBot():
 
                     try:
                         context.bot.send_message(chat_id=user_id,
-                                         text=src.messages.notification_message(checking_ttb, dt_update_time),
+                                         text=src.messages.notification_message(checking_ttb, dt_update_time, timetable_url),
                                          reply_markup=src.keyboards.notify_keyboard(),
                                          parse_mode=ParseMode.HTML)
                     # If user blocked this bot & etc...
@@ -385,7 +392,7 @@ class LFTableBot():
         job = self.updater.job_queue
 
         # DISABLE JOB TEMPORARLY
-        #job.run_repeating(self.notifications_timejob, interval = src.static.check_updates_interval, first=5)
+        job.run_repeating(self.notifications_timejob, interval = src.static.check_updates_interval, first=5)
 
         self.dispatcher.add_handler(CommandHandler('start', self.handle_start_command))
         self.dispatcher.add_handler(CallbackQueryHandler(self.handle_button_click))

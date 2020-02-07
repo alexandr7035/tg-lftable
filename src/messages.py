@@ -60,11 +60,11 @@ def timetable_message(ttb):
     # Return this text
     return(text)
 
-def notification_message(ttb, update_time):
+def notification_message(ttb, update_time, timetable_url):
     text = '🔔 Обновлено расписание <b>"' + ttb.name + '". 🔔</b>\n'
     text += 'Дата обновления: ' + update_time.strftime('%d.%m.%Y') + '\n'
     text += 'Время обновления: '+ update_time.strftime('%H:%M') + '\n\n'
-    text += '<b>Скачать</b>: ' + ttb.url + "\n\n"
+    text += '<b>Скачать</b>: ' + timetable_url + "\n\n"
 
     return (text)
 
