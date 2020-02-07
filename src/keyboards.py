@@ -110,6 +110,10 @@ def answer_keyboard(ttb, user_id):
         back_callback = 'mag_menu'
     elif ttb.shortname.startswith('ek_polit'):
         back_callback = 'ek_polit_menu'
+    elif ttb.shortname.startswith('ekz_'):
+        back_callback = 'ekz_menu'
+    elif ttb.shortname.startswith('zachet_'):
+        back_callback = 'zachet_menu'
 
     back_button = InlineKeyboardButton('⬅️ Назад', callback_data=back_callback)
 

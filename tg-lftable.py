@@ -225,7 +225,9 @@ class LFTableBot():
         # Messagess for certain timetables
         elif callback in ['pravo_c1', 'pravo_c2', 'pravo_c3', 'pravo_c4',
                           'ek_polit_c1', 'ek_polit_c2', 'ek_polit_c3', 'ek_polit_c4',
-                        'mag_c1', 'mag_c2', 'refresh', 'notify']:
+                          'zachet_c1', 'zachet_c2', 'zachet_c3', 'zachet_c4',
+                          'ekz_c1', 'ekz_c2', 'ekz_c3', 'ekz_c4',
+                          'mag_c1', 'mag_c2', 'refresh', 'notify']:
             self.show_timetable_message(context.bot, callback, user_id, message_id, message_text)
 
         # Since we cannot delete messages older than 48 hours,
@@ -256,7 +258,6 @@ class LFTableBot():
             keyboard = src.keyboards.zachet_keyboard()
         elif callback == 'ekz_menu':
             keyboard = src.keyboards.ekz_keyboard()
-
 
         bot.edit_message_text(chat_id=user_id,
                         message_id=message_id,
@@ -362,8 +363,10 @@ class LFTableBot():
         # This is to prevent late notifications if the bot was down for a long time
         self.timesdb.connect()
         for timetable in src.static.all_timetables:
+            # There is separate gettime function for credits and exams
             if timetable in src.static.credit_exam_timetables:
                 update_time = src.gettime.credit_ekzam_gettime(timetable)['time'].strftime('%d.%m.%Y %H:%M:%S')
+            # Function for usual timetables
             else:
                 update_time = src.gettime.ttb_gettime(timetable).strftime('%d.%m.%Y %H:%M:%S')
             self.timesdb.write_time(timetable.shortname, update_time)

@@ -31,8 +31,15 @@ def main_menu_message():
     return(text)
 
 def timetable_message(ttb):
+    # THERE'S SEPARATE FUNCTIONS FOR USUAL AND CREDIT/EXAM TIMETABLES. SEE src.gettime.py
     # Get the timetable's "mtime"
-    ttb_datetime = src.gettime.ttb_gettime(ttb)
+    if ttb in src.static.credit_exam_timetables:
+        data = src.gettime.credit_ekzam_gettime(ttb)
+        ttb_datetime = data['time']
+        ttb_url = data['url']
+    else:
+        ttb_datetime = src.gettime.ttb_gettime(ttb)
+        ttb_url = ttb.url
 
     # Change date to necessary format.
     update_time = ttb_datetime.strftime('%H:%M')
@@ -44,7 +51,7 @@ def timetable_message(ttb):
     text += 'Дата обновления: ' + update_date + '\n'
     text += 'Время обновления: '+ update_time + '\n\n'
 
-    text += '<b>Скачать</b>: ' + ttb.url + "\n\n"
+    text += '<b>Скачать</b>: ' + ttb_url + "\n\n"
 
     # To fix badrequest error.
     text += '-------------------\n'
