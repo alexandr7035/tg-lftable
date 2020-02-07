@@ -310,7 +310,7 @@ class LFTableBot():
             # Get ttb update time from law.bsu.by
             # Use different gettime functions for ussual and credit/exam timetables. See src.gettime.py
             if checking_ttb in src.static.credit_exam_timetables:
-                data = src.gettime.credit_ekzam_gettime(checking_ttb)
+                data = src.gettime.credit_exam_gettime(checking_ttb)
                 update_time = data['time'].strftime('%d.%m.%Y %H:%M:%S')
                 timetable_url = data['url']
             else:
@@ -372,7 +372,7 @@ class LFTableBot():
         for timetable in src.static.all_timetables:
             # There is separate gettime function for credits and exams
             if timetable in src.static.credit_exam_timetables:
-                update_time = src.gettime.credit_ekzam_gettime(timetable)['time'].strftime('%d.%m.%Y %H:%M:%S')
+                update_time = src.gettime.credit_exam_gettime(timetable)['time'].strftime('%d.%m.%Y %H:%M:%S')
             # Function for usual timetables
             else:
                 update_time = src.gettime.ttb_gettime(timetable).strftime('%d.%m.%Y %H:%M:%S')

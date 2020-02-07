@@ -33,7 +33,7 @@ def ttb_gettime(ttb):
 
 
 # In this function we need to return both time and url (to use later in messages)
-def credit_ekzam_gettime(timetable):
+def credit_exam_gettime(timetable):
 
     # THIS IS A HOTFIX TO PREVENT "CERTIFICATE_VERIFY_FAILED" ERROR!
     # DISABLE THIS LATER

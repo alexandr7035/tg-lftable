@@ -34,7 +34,7 @@ def timetable_message(ttb):
     # THERE'S SEPARATE FUNCTIONS FOR USUAL AND CREDIT/EXAM TIMETABLES. SEE src.gettime.py
     # Get the timetable's "mtime"
     if ttb in src.static.credit_exam_timetables:
-        data = src.gettime.credit_ekzam_gettime(ttb)
+        data = src.gettime.credit_exam_gettime(ttb)
         ttb_datetime = data['time']
         ttb_url = data['url']
     else:
