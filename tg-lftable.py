@@ -357,6 +357,8 @@ class LFTableBot():
 
 
     def start(self):
+        # TEMPORARLY DISABLE WRITING TO DB
+        '''
         # Sets times to the 'times.db' immediately after the run WITHOUT notifiying users
         # This is to prevent late notifications if the bot was down for a long time
         self.timesdb.connect()
@@ -364,6 +366,7 @@ class LFTableBot():
             update_time = src.gettime.ttb_gettime(timetable).strftime('%d.%m.%Y %H:%M:%S')
             self.timesdb.write_time(timetable.shortname, update_time)
         self.timesdb.close()
+        '''
 
         # Start notifcations test immediatly after the run if '--test-notificztions' option is specified
         if self.args.test_notifications == True:
@@ -375,7 +378,9 @@ class LFTableBot():
          # Run timejob for notificatins
          # First run within 5 seconds after the start
         job = self.updater.job_queue
-        job.run_repeating(self.notifications_timejob, interval = src.static.check_updates_interval, first=5)
+
+        # DISABLE JOB TEMPORARLY
+        #job.run_repeating(self.notifications_timejob, interval = src.static.check_updates_interval, first=5)
 
         self.dispatcher.add_handler(CommandHandler('start', self.handle_start_command))
         self.dispatcher.add_handler(CallbackQueryHandler(self.handle_button_click))

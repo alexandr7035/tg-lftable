@@ -35,9 +35,6 @@ ek_polit_c2 = TTBS()
 ek_polit_c3 = TTBS()
 ek_polit_c4 = TTBS()
 
-all_timetables = [pravo_c1, pravo_c2, pravo_c3, pravo_c4,
-                  ek_polit_c1, ek_polit_c2, ek_polit_c3, ek_polit_c4,
-                  mag_c1, mag_c2]
 
 pravo_c1.url = 'https://law.bsu.by/pub/2/Raspisanie_1_pravo.xls'
 pravo_c1.name = 'Правоведение, 1-й курс'
@@ -93,9 +90,6 @@ ekz_c3 = TTBS()
 zachet_c4 = TTBS()
 ekz_c4 = TTBS()
 
-all_credit_exam_timetables = [zachet_c1, ekz_c1, zachet_c2, ekz_c2,
-                              zachet_c3, ekz_c3, zachet_c4, ekz_c4]
-
 zachet_c1.name = 'Зачеты, 1-й курс'
 zachet_c1.urls = {'winter' : 'https://law.bsu.by/pub/2/zima_zachet_1k.xls',
                   'summer' : 'https://law.bsu.by/pub/2/leto_zachet_1k.xls'}
@@ -137,3 +131,15 @@ zachet_c4.shortname = 'zachet_c4'
 ekz_c4.name = 'Экзамены, 4-й курс'
 ekz_c4.urls = {'winter' : 'https://law.bsu.by/pub/2/zima_ekz_4k.xls'}
 ekz_c4.shortname = 'ekz_c4'
+
+
+# Timetable lists to make the code simplier
+all_timetables = [pravo_c1, pravo_c2, pravo_c3, pravo_c4,
+                  ek_polit_c1, ek_polit_c2, ek_polit_c3, ek_polit_c4,
+                  mag_c1, mag_c2,
+                  zachet_c1, zachet_c2, zachet_c3, zachet_c4,
+                  ekz_c1, ekz_c2, ekz_c3, ekz_c4]
+
+credit_exam_timetables = [zachet_c1, ekz_c1, zachet_c2, ekz_c2,
+                              zachet_c3, ekz_c3, zachet_c4, ekz_c4]
+                              
