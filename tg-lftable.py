@@ -219,13 +219,15 @@ class LFTableBot():
                         timeout=10)
 
         # Menus for specializations
-        elif callback in ['pravo_menu', 'ek_polit_menu', 'mag_menu']:
+        elif callback in ['pravo_menu', 'ek_polit_menu', 'mag_menu', 'ekz_zachet_menu', 'zachet_menu', 'ekz_menu']:
             self.show_timetable_menu(context.bot, callback, user_id, message_id)
 
         # Messagess for certain timetables
         elif callback in ['pravo_c1', 'pravo_c2', 'pravo_c3', 'pravo_c4',
                           'ek_polit_c1', 'ek_polit_c2', 'ek_polit_c3', 'ek_polit_c4',
-                        'mag_c1', 'mag_c2', 'refresh', 'notify']:
+                          'zachet_c1', 'zachet_c2', 'zachet_c3', 'zachet_c4',
+                          'ekz_c1', 'ekz_c2', 'ekz_c3', 'ekz_c4',
+                          'mag_c1', 'mag_c2', 'refresh', 'notify']:
             self.show_timetable_message(context.bot, callback, user_id, message_id, message_text)
 
         # Since we cannot delete messages older than 48 hours,
@@ -246,6 +248,16 @@ class LFTableBot():
             keyboard = src.keyboards.mag_keyboard()
         elif callback == 'ek_polit_menu':
             keyboard = src.keyboards.ek_polit_keyboard()
+        
+        # This menu has 2 submenus
+        # Credit/exam timetables are separated and ech have its own menu
+        elif callback == 'ekz_zachet_menu':
+            keyboard = src.keyboards.ekz_zachet_keyboard()
+        # The submenus
+        elif callback == 'zachet_menu':
+            keyboard = src.keyboards.zachet_keyboard()
+        elif callback == 'ekz_menu':
+            keyboard = src.keyboards.ekz_keyboard()
 
         bot.edit_message_text(chat_id=user_id,
                         message_id=message_id,
@@ -296,7 +308,14 @@ class LFTableBot():
         for checking_ttb in src.static.all_timetables:
 
             # Get ttb update time from law.bsu.by
-            update_time = src.gettime.ttb_gettime(checking_ttb).strftime('%d.%m.%Y %H:%M:%S')
+            # Use different gettime functions for ussual and credit/exam timetables. See src.gettime.py
+            if checking_ttb in src.static.credit_exam_timetables:
+                data = src.gettime.credit_exam_gettime(checking_ttb)
+                update_time = data['time'].strftime('%d.%m.%Y %H:%M:%S')
+                timetable_url = data['url']
+            else:
+                update_time = src.gettime.ttb_gettime(checking_ttb).strftime('%d.%m.%Y %H:%M:%S')
+                timetable_url = checking_ttb.url
 
             # Get old update time from db.
             old_update_time = self.timesdb.get_time(checking_ttb.shortname)
@@ -311,7 +330,7 @@ class LFTableBot():
             if dt_update_time > dt_old_update_time:
 
                 logger.info("'" + checking_ttb.shortname + "' timetable was updated at " + update_time)
-
+                
                 # Get list of users who enabled notifications for this timetable
                 self.notificationsdb.connect()
                 users_to_notify = self.notificationsdb.get_notified_users(checking_ttb.shortname)
@@ -322,7 +341,7 @@ class LFTableBot():
 
                     try:
                         context.bot.send_message(chat_id=user_id,
-                                         text=src.messages.notification_message(checking_ttb, dt_update_time),
+                                         text=src.messages.notification_message(checking_ttb, dt_update_time, timetable_url),
                                          reply_markup=src.keyboards.notify_keyboard(),
                                          parse_mode=ParseMode.HTML)
                     # If user blocked this bot & etc...
@@ -346,13 +365,20 @@ class LFTableBot():
 
 
     def start(self):
+        
         # Sets times to the 'times.db' immediately after the run WITHOUT notifiying users
         # This is to prevent late notifications if the bot was down for a long time
         self.timesdb.connect()
         for timetable in src.static.all_timetables:
-            update_time = src.gettime.ttb_gettime(timetable).strftime('%d.%m.%Y %H:%M:%S')
+            # There is separate gettime function for credits and exams
+            if timetable in src.static.credit_exam_timetables:
+                update_time = src.gettime.credit_exam_gettime(timetable)['time'].strftime('%d.%m.%Y %H:%M:%S')
+            # Function for usual timetables
+            else:
+                update_time = src.gettime.ttb_gettime(timetable).strftime('%d.%m.%Y %H:%M:%S')
             self.timesdb.write_time(timetable.shortname, update_time)
         self.timesdb.close()
+        
 
         # Start notifcations test immediatly after the run if '--test-notificztions' option is specified
         if self.args.test_notifications == True:
@@ -364,6 +390,8 @@ class LFTableBot():
          # Run timejob for notificatins
          # First run within 5 seconds after the start
         job = self.updater.job_queue
+
+        # DISABLE JOB TEMPORARLY
         job.run_repeating(self.notifications_timejob, interval = src.static.check_updates_interval, first=5)
 
         self.dispatcher.add_handler(CommandHandler('start', self.handle_start_command))
