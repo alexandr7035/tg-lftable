@@ -358,7 +358,7 @@ class LFTableBot():
                 self.timesdb.write_time(checking_ttb.shortname, update_time)
 
             # A delay to prevent any spam control exceptions
-            time.sleep(src.static.send_message_interval)
+            time.sleep(src.static.site_requests_interval)
 
         # Close 'times.db' until next check.
         self.timesdb.close()
