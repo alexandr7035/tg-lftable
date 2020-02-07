@@ -12,7 +12,7 @@ def main_menu_keyboard():
     mag_btn = InlineKeyboardButton('📒 Магистратура', callback_data='mag_menu')
     ekz_zachet_btn = InlineKeyboardButton('☠️ Зачеты и экзамены', callback_data='ekz_zachet_menu')
 
-    keyboard = [[pravo_btn], [ek_polit_btn], [mag_btn], [ekz_zachet_btn]]
+    keyboard = [[pravo_btn, ek_polit_btn], [mag_btn, ekz_zachet_btn]]
 
     return(InlineKeyboardMarkup(keyboard))
 
@@ -58,7 +58,7 @@ def ekz_zachet_keyboard():
     ekz_btn = InlineKeyboardButton('☠️ Экзамены', callback_data='ekz_menu')
     back_button = InlineKeyboardButton('⬅️ Назад', callback_data='main_menu')
 
-    keyboard = [[zachet_btn], [ekz_btn], [back_button]]
+    keyboard = [[zachet_btn, ekz_btn], [back_button]]
 
     return(InlineKeyboardMarkup(keyboard))
 
