@@ -357,16 +357,18 @@ class LFTableBot():
 
 
     def start(self):
-        # TEMPORARLY DISABLE WRITING TO DB
-        '''
+        
         # Sets times to the 'times.db' immediately after the run WITHOUT notifiying users
         # This is to prevent late notifications if the bot was down for a long time
         self.timesdb.connect()
         for timetable in src.static.all_timetables:
-            update_time = src.gettime.ttb_gettime(timetable).strftime('%d.%m.%Y %H:%M:%S')
+            if timetable in src.static.credit_exam_timetables:
+                update_time = src.gettime.credit_ekzam_gettime(timetable).strftime('%d.%m.%Y %H:%M:%S')
+            else:
+                update_time = src.gettime.ttb_gettime(timetable).strftime('%d.%m.%Y %H:%M:%S')
             self.timesdb.write_time(timetable.shortname, update_time)
         self.timesdb.close()
-        '''
+        
 
         # Start notifcations test immediatly after the run if '--test-notificztions' option is specified
         if self.args.test_notifications == True:
