@@ -219,7 +219,7 @@ class LFTableBot():
                         timeout=10)
 
         # Menus for specializations
-        elif callback in ['pravo_menu', 'ek_polit_menu', 'mag_menu', 'ekz_zachet_menu']:
+        elif callback in ['pravo_menu', 'ek_polit_menu', 'mag_menu', 'ekz_zachet_menu', 'zachet_menu', 'ekz_menu']:
             self.show_timetable_menu(context.bot, callback, user_id, message_id)
 
         # Messagess for certain timetables
@@ -246,8 +246,17 @@ class LFTableBot():
             keyboard = src.keyboards.mag_keyboard()
         elif callback == 'ek_polit_menu':
             keyboard = src.keyboards.ek_polit_keyboard()
+        
+        # This menu has 2 submenus
+        # Credit/exam timetables are separated and ech have its own menu
         elif callback == 'ekz_zachet_menu':
             keyboard = src.keyboards.ekz_zachet_keyboard()
+        # The submenus
+        elif callback == 'zachet_menu':
+            keyboard = src.keyboards.zachet_keyboard()
+        elif callback == 'ekz_menu':
+            keyboard = src.keyboards.ekz_keyboard()
+
 
         bot.edit_message_text(chat_id=user_id,
                         message_id=message_id,

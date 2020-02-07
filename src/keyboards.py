@@ -62,6 +62,30 @@ def ekz_zachet_keyboard():
 
     return(InlineKeyboardMarkup(keyboard))
 
+def zachet_keyboard():
+    zachet_c1_btn = InlineKeyboardButton('Зачеты - 1⃣', callback_data=src.static.zachet_c1.shortname)
+    zachet_c2_btn = InlineKeyboardButton('Зачеты - 2️⃣', callback_data=src.static.zachet_c2.shortname)
+    zachet_c3_btn = InlineKeyboardButton('Зачеты - 3️⃣', callback_data=src.static.zachet_c3.shortname)
+    zachet_c4_btn = InlineKeyboardButton('Зачеты - 4️⃣', callback_data=src.static.zachet_c4.shortname)
+
+    back_button = InlineKeyboardButton('⬅️ Назад', callback_data='ekz_zachet_menu')
+
+    keyboard = [[zachet_c1_btn, zachet_c2_btn], [zachet_c3_btn, zachet_c4_btn], [back_button]]
+
+    return(InlineKeyboardMarkup(keyboard))
+
+def ekz_keyboard():
+    ekz_c1_btn = InlineKeyboardButton('Экзамены - 1⃣', callback_data=src.static.ekz_c1.shortname)
+    ekz_c2_btn = InlineKeyboardButton('Экзамены - 2️⃣', callback_data=src.static.ekz_c2.shortname)
+    ekz_c3_btn = InlineKeyboardButton('Экзамены - 3️⃣', callback_data=src.static.ekz_c3.shortname)
+    ekz_c4_btn = InlineKeyboardButton('Экзамены - 4️⃣', callback_data=src.static.ekz_c4.shortname)
+
+    back_button = InlineKeyboardButton('⬅️ Назад', callback_data='ekz_zachet_menu')
+
+    keyboard = [[ekz_c1_btn, ekz_c2_btn], [ekz_c3_btn, ekz_c4_btn], [back_button]]
+
+    return(InlineKeyboardMarkup(keyboard))
+
 # Keyboard for specific timetable.
 def answer_keyboard(ttb, user_id):
 
