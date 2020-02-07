@@ -32,6 +32,7 @@ def ttb_gettime(ttb):
     return(date)
 
 
+# In this function we need to return both time and url (to use later in messages)
 def credit_ekzam_gettime(timetable):
 
     # THIS IS A HOTFIX TO PREVENT "CERTIFICATE_VERIFY_FAILED" ERROR!
@@ -68,9 +69,9 @@ def credit_ekzam_gettime(timetable):
 
         # Choose relevant time and return
         if winter_date > summer_date:
-            return(winter_date)
+            return({'time': winter_date, 'url': winter_url})
         else:
-            return(summer_date)
+            return({'time': summer_date, 'url': summer_url})
 
     else:
         winter_url = timetable.urls['winter']
@@ -82,4 +83,4 @@ def credit_ekzam_gettime(timetable):
         winter_date = old_tz.localize(gmt_date).astimezone(new_tz)
         print(winter_date)
 
-        return(winter_date)
+        return({'time': winter_date, 'url': winter_url})

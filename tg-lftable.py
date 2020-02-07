@@ -363,7 +363,7 @@ class LFTableBot():
         self.timesdb.connect()
         for timetable in src.static.all_timetables:
             if timetable in src.static.credit_exam_timetables:
-                update_time = src.gettime.credit_ekzam_gettime(timetable).strftime('%d.%m.%Y %H:%M:%S')
+                update_time = src.gettime.credit_ekzam_gettime(timetable)['time'].strftime('%d.%m.%Y %H:%M:%S')
             else:
                 update_time = src.gettime.ttb_gettime(timetable).strftime('%d.%m.%Y %H:%M:%S')
             self.timesdb.write_time(timetable.shortname, update_time)
