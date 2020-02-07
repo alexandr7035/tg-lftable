@@ -58,14 +58,12 @@ def credit_ekzam_gettime(timetable):
         native_date = ' '.join(dict(response.headers)['Last-Modified'].rsplit()[1:-1])
         gmt_date = datetime.strptime(native_date, '%d %b %Y %H:%M:%S')
         winter_date = old_tz.localize(gmt_date).astimezone(new_tz)
-        print(winter_date)
 
         # Get summer time
         response =  urllib.request.urlopen(summer_url, timeout=25, context=ctx)
         native_date = ' '.join(dict(response.headers)['Last-Modified'].rsplit()[1:-1])
         gmt_date = datetime.strptime(native_date, '%d %b %Y %H:%M:%S')
         summer_date = old_tz.localize(gmt_date).astimezone(new_tz)
-        print(summer_date)
 
         # Choose relevant time and return
         if winter_date > summer_date:
@@ -81,6 +79,5 @@ def credit_ekzam_gettime(timetable):
         native_date = ' '.join(dict(response.headers)['Last-Modified'].rsplit()[1:-1])
         gmt_date = datetime.strptime(native_date, '%d %b %Y %H:%M:%S')
         winter_date = old_tz.localize(gmt_date).astimezone(new_tz)
-        print(winter_date)
 
         return({'time': winter_date, 'url': winter_url})
