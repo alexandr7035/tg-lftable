@@ -315,7 +315,7 @@ class LFTableBot():
                         message_id=message_id,
                         text=src.messages.timetable_message(timetable_to_show),
                         parse_mode=ParseMode.HTML,
-                        reply_markup=src.keyboards.answer_keyboard(timetable_to_show, user_id), timeout=10)
+                        reply_markup=src.keyboards.timetable_keyboard(timetable_to_show, user_id), timeout=10)
 
 
     # A timejob for notifications

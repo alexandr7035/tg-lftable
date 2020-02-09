@@ -87,7 +87,7 @@ def ekz_keyboard():
     return(InlineKeyboardMarkup(keyboard))
 
 # Keyboard for specific timetable.
-def answer_keyboard(ttb, user_id):
+def timetable_keyboard(ttb, user_id):
 
     # Button to refresh current timetable message (so you don't have to come back to main menu).
     refresh_button = InlineKeyboardButton('🔄 Обновить информацию', callback_data='refresh')
