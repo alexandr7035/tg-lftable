@@ -141,6 +141,7 @@ all_timetables = [pravo_c1, pravo_c2, pravo_c3, pravo_c4,
                   zachet_c1, zachet_c2, zachet_c3, zachet_c4,
                   ekz_c1, ekz_c2, ekz_c3, ekz_c4]
 
+# List for only credits and exams 
 credit_exam_timetables = [zachet_c1, ekz_c1, zachet_c2, ekz_c2,
                               zachet_c3, ekz_c3, zachet_c4, ekz_c4]
                               

@@ -32,6 +32,8 @@ def ttb_gettime(ttb):
     return(date)
 
 
+# Sepatate function for cretis and exams
+# Credit/exam timetable may have 2 urls (Depends on season and course)
 # In this function we need to return both time and url (to use later in messages)
 def credit_exam_gettime(timetable):
 
@@ -41,10 +43,12 @@ def credit_exam_gettime(timetable):
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
 
+    # !!!!!
     # See src.static.py 
     # If there is winter and summer timetable files avaiable (course 1-3), get both, 
     # compare and return the freshest 
     # Else get only winter time (for course 4)
+    # !!!!!
 
     old_tz = pytz.timezone('Europe/London')
     new_tz = pytz.timezone('Europe/Minsk')

@@ -124,6 +124,7 @@ class LFTableBot():
         if self.args.log_exceptions == True:
             log_exceptions()
 
+
     # Receives 'update.message.date' in pure form
     # Compares current time with request time 
     # True, if the differance is less than or equal to 'src.static.max_request_delay'
@@ -173,6 +174,7 @@ class LFTableBot():
                             disable_web_page_preview=True,
                             timeout=10)
     
+
     # '/stop' command
     def handle_stop_command(self, update, context):
         user_id = str(update.message.chat_id)
@@ -195,8 +197,8 @@ class LFTableBot():
 
 
     # Handle any received text message EXCEPT telegram commands -
-    # ( except messages started with '/' like '/start').
-    # Now just send info message how to start the bot.
+    # (except messages started with '/' like '/start').
+    # Just send info message how to start the bot.
     def handle_text_commands(self, update, context):
         user_id = update.message.chat_id
         
@@ -261,6 +263,7 @@ class LFTableBot():
                              parse_mode=ParseMode.HTML)
 
 
+    # Menus for specializations or credits/exams
     def show_timetable_menu(self, bot, callback, user_id, message_id):
         if callback == 'pravo_menu':
             keyboard = src.keyboards.pravo_keyboard()
@@ -287,7 +290,8 @@ class LFTableBot():
                         disable_web_page_preview=True,
                         timeout=10)
 
-
+    
+    # Message for certain timetable
     def show_timetable_message(self, bot, callback, user_id, message_id, message_text):
 
         # If 'refresh' or 'notify' button is pressed the only way to detect timetable (to show this message again)
@@ -300,7 +304,8 @@ class LFTableBot():
         else:
             timetable_to_show = getattr(src.static, callback)
 
-        # Handle notify button (write to db)s
+        # Handle notify button (write to db)
+        # See src.db_classes.NotificationsDB() methods 
         if callback == 'notify':
             self.notificationsdb.connect()
             if not self.notificationsdb.check_if_user_notified(user_id, timetable_to_show.shortname):
@@ -384,6 +389,7 @@ class LFTableBot():
         self.timesdb.close()
 
 
+    # Method that runs the bot
     def start(self):
         
         # Sets times to the 'times.db' immediately after the run WITHOUT notifiying users
@@ -396,6 +402,8 @@ class LFTableBot():
             # Function for usual timetables
             else:
                 update_time = src.gettime.ttb_gettime(timetable).strftime('%d.%m.%Y %H:%M:%S')
+            
+            # Write time to the db
             self.timesdb.write_time(timetable.shortname, update_time)
         self.timesdb.close()
         
@@ -411,7 +419,6 @@ class LFTableBot():
          # First run within 5 seconds after the start
         job = self.updater.job_queue
 
-        # DISABLE JOB TEMPORARLY
         job.run_repeating(self.notifications_timejob, interval = src.static.check_updates_interval, first=5)
 
         self.dispatcher.add_handler(CommandHandler('start', self.handle_start_command))
