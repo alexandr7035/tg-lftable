@@ -179,21 +179,25 @@ class LFTableBot():
     def handle_stop_command(self, update, context):
         user_id = str(update.message.chat_id)
 
-        logger.info('user ' + str(user_id) + ' entered \'stop\' command, disable all notifications')
-        self.notificationsdb.connect()
+        # Check for late requests
+        if self.check_if_request_late(update.message.date):
+            logger.info('skip old /stop command from user ' + str(user_id))
+        else:
+            logger.info('user ' + str(user_id) + ' entered \'stop\' command, disable all notifications')
+            self.notificationsdb.connect()
         
-        # Disable all notifications for user
-        for timetable in src.static.all_timetables:
-            if self.notificationsdb.check_if_user_notified(user_id, timetable.shortname):
-                logger.info('stop command recived: disable \'' + timetable.shortname + '\' notifications for user ' + str(user_id))
-                self.notificationsdb.disable_notifications(user_id, timetable.shortname)
+            # Disable all notifications for user
+            for timetable in src.static.all_timetables:
+                if self.notificationsdb.check_if_user_notified(user_id, timetable.shortname):
+                    logger.info('stop command recived: disable \'' + timetable.shortname + '\' notifications for user ' + str(user_id))
+                    self.notificationsdb.disable_notifications(user_id, timetable.shortname)
 
-        self.notificationsdb.close()
+            self.notificationsdb.close()
 
-        update.message.reply_text(src.messages.stop_message(),
-                            parse_mode=ParseMode.HTML,
-                            disable_web_page_preview=True,
-                            timeout=10)
+            update.message.reply_text(src.messages.stop_message(),
+                              parse_mode=ParseMode.HTML,
+                              disable_web_page_preview=True,
+                              timeout=10)
 
 
     # Handle any received text message EXCEPT telegram commands -
