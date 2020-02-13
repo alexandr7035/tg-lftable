@@ -10,8 +10,9 @@ def main_menu_keyboard():
     pravo_btn = InlineKeyboardButton('📕 Правоведение', callback_data='pravo_menu')
     ek_polit_btn = InlineKeyboardButton('📗 Эк. право и политология', callback_data='ek_polit_menu')
     mag_btn = InlineKeyboardButton('📒 Магистратура', callback_data='mag_menu')
+    ekz_zachet_btn = InlineKeyboardButton('☠️ Зачеты и экзамены', callback_data='ekz_zachet_menu')
 
-    keyboard = [[pravo_btn], [ek_polit_btn], [mag_btn]]
+    keyboard = [[pravo_btn, ek_polit_btn], [mag_btn, ekz_zachet_btn]]
 
     return(InlineKeyboardMarkup(keyboard))
 
@@ -52,9 +53,41 @@ def mag_keyboard():
 
     return(InlineKeyboardMarkup(keyboard))
 
+def ekz_zachet_keyboard():
+    zachet_btn = InlineKeyboardButton('💀 Зачеты', callback_data='zachet_menu')
+    ekz_btn = InlineKeyboardButton('☠️ Экзамены', callback_data='ekz_menu')
+    back_button = InlineKeyboardButton('⬅️ Назад', callback_data='main_menu')
+
+    keyboard = [[zachet_btn, ekz_btn], [back_button]]
+
+    return(InlineKeyboardMarkup(keyboard))
+
+def zachet_keyboard():
+    zachet_c1_btn = InlineKeyboardButton('Зачеты - 1⃣', callback_data=src.static.zachet_c1.shortname)
+    zachet_c2_btn = InlineKeyboardButton('Зачеты - 2️⃣', callback_data=src.static.zachet_c2.shortname)
+    zachet_c3_btn = InlineKeyboardButton('Зачеты - 3️⃣', callback_data=src.static.zachet_c3.shortname)
+    zachet_c4_btn = InlineKeyboardButton('Зачеты - 4️⃣', callback_data=src.static.zachet_c4.shortname)
+
+    back_button = InlineKeyboardButton('⬅️ Назад', callback_data='ekz_zachet_menu')
+
+    keyboard = [[zachet_c1_btn, zachet_c2_btn], [zachet_c3_btn, zachet_c4_btn], [back_button]]
+
+    return(InlineKeyboardMarkup(keyboard))
+
+def ekz_keyboard():
+    ekz_c1_btn = InlineKeyboardButton('Экзамены - 1⃣', callback_data=src.static.ekz_c1.shortname)
+    ekz_c2_btn = InlineKeyboardButton('Экзамены - 2️⃣', callback_data=src.static.ekz_c2.shortname)
+    ekz_c3_btn = InlineKeyboardButton('Экзамены - 3️⃣', callback_data=src.static.ekz_c3.shortname)
+    ekz_c4_btn = InlineKeyboardButton('Экзамены - 4️⃣', callback_data=src.static.ekz_c4.shortname)
+
+    back_button = InlineKeyboardButton('⬅️ Назад', callback_data='ekz_zachet_menu')
+
+    keyboard = [[ekz_c1_btn, ekz_c2_btn], [ekz_c3_btn, ekz_c4_btn], [back_button]]
+
+    return(InlineKeyboardMarkup(keyboard))
 
 # Keyboard for specific timetable.
-def answer_keyboard(ttb, user_id):
+def timetable_keyboard(ttb, user_id):
 
     # Button to refresh current timetable message (so you don't have to come back to main menu).
     refresh_button = InlineKeyboardButton('🔄 Обновить информацию', callback_data='refresh')
@@ -77,6 +110,10 @@ def answer_keyboard(ttb, user_id):
         back_callback = 'mag_menu'
     elif ttb.shortname.startswith('ek_polit'):
         back_callback = 'ek_polit_menu'
+    elif ttb.shortname.startswith('ekz_'):
+        back_callback = 'ekz_menu'
+    elif ttb.shortname.startswith('zachet_'):
+        back_callback = 'zachet_menu'
 
     back_button = InlineKeyboardButton('⬅️ Назад', callback_data=back_callback)
 

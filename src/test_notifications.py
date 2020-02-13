@@ -10,6 +10,7 @@ import src.static
 os.chdir('..')
 
 # Writes old times to times db on start to artificially trigger notifications
+# Only for debug
 def test_notifications():
 	
 	timesdb = src.db_classes.TimesDB()
