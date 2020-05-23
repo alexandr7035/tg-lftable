@@ -134,7 +134,7 @@ class LFTableBot():
     def check_if_request_late(self, request_date):
 
         # Convert it to GMT+3
-        old_tz = pytz.timezone('Europe/London')
+        old_tz = pytz.timezone('GMT')
         new_tz = pytz.timezone('Europe/Minsk')
         gmt3_request_date = old_tz.localize(request_date).astimezone(new_tz)
         
@@ -143,6 +143,7 @@ class LFTableBot():
 
         # Compare current time with request time 
         request_delay = time.time() - gmt3_request_unixtime
+
         if request_delay >= src.static.max_request_delay:
             return True
         else:
