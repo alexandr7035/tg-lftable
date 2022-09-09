@@ -1,7 +1,14 @@
-## Deskription:
+## Description:
 ***tg-lftable***: telegram bot which provides an easy way to get the law faculty's timetable (BSU).
 
 http://t.me/lftable_bot
+
+## Screenshots
+<p>
+<img src="img/screenshot_1.png" width="30%"/>
+<img src="img/screenshot_3.png" width="25%"/>
+<img src="img/screenshot_2.png" width="30%"/>
+</p>
 
 ## Installation and launch:
 
