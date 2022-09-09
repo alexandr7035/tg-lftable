@@ -43,12 +43,10 @@ def ek_polit_keyboard():
     return(InlineKeyboardMarkup(keyboard))
 
 def mag_keyboard():
-
     mag_c1_btn = InlineKeyboardButton('Магистратура - 1⃣', callback_data=src.static.mag_c1.shortname)
-    mag_c2_btn = InlineKeyboardButton('Магистратура - 2⃣', callback_data=src.static.mag_c2.shortname)
     back_button = InlineKeyboardButton('⬅️ Назад', callback_data='main_menu')
 
-    keyboard = [[mag_c1_btn, mag_c2_btn],
+    keyboard = [[mag_c1_btn],
                 [back_button]]
 
     return(InlineKeyboardMarkup(keyboard))
