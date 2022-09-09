@@ -254,7 +254,7 @@ class LFTableBot():
                           'ek_polit_c1', 'ek_polit_c2', 'ek_polit_c3', 'ek_polit_c4',
                           'zachet_c1', 'zachet_c2', 'zachet_c3', 'zachet_c4',
                           'ekz_c1', 'ekz_c2', 'ekz_c3', 'ekz_c4',
-                          'mag_c1', 'mag_c2', 'refresh', 'notify']:
+                          'mag_c1', 'refresh', 'notify']:
             self.show_timetable_message(context.bot, callback, user_id, message_id, message_text)
 
         # Since we cannot delete messages older than 48 hours,

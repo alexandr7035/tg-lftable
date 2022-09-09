@@ -69,7 +69,7 @@ ek_polit_c4.url = 'https://law.bsu.by/pub/2/Raspisanie_4_ek_polit.xls'
 ek_polit_c4.name = 'Экономическое право и политология, 4-й курс'
 ek_polit_c4.shortname = 'ek_polit_c4'
 
-mag_c1.url = 'https://law.bsu.by/pub/2/Raspisanie_mag_1_kurs.xls'
+mag_c1.url = 'https://law.bsu.by/pub/2/Raspisanie_mag_1_kurs_1s.xlsx'
 mag_c1.name = 'Магистратура, 1-й курс'
 mag_c1.shortname = 'mag_c1'
 
@@ -137,7 +137,7 @@ ekz_c4.shortname = 'ekz_c4'
 # Timetable lists to make the code simplier
 all_timetables = [pravo_c1, pravo_c2, pravo_c3, pravo_c4,
                   ek_polit_c1, ek_polit_c2, ek_polit_c3, ek_polit_c4,
-                  mag_c1, mag_c2,
+                  mag_c1,
                   zachet_c1, zachet_c2, zachet_c3, zachet_c4,
                   ekz_c1, ekz_c2, ekz_c3, ekz_c4]
 
