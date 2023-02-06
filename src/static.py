@@ -37,15 +37,15 @@ ek_polit_c3 = TTBS()
 ek_polit_c4 = TTBS()
 
 
-pravo_c1.url = 'https://law.bsu.by/pub/2/Raspisanie_1_pravo_osen.xls'
+pravo_c1.url = 'https://law.bsu.by/pub/2/Raspisanie_1_pravo.xls'
 pravo_c1.name = 'Правоведение, 1-й курс'
 pravo_c1.shortname = 'pravo_c1'
 
-pravo_c2.url = 'https://law.bsu.by/pub/2/Raspisanie_2_pravo_osen.xls'
+pravo_c2.url = 'https://law.bsu.by/pub/2/Raspisanie_2_pravo_vesna.xls'
 pravo_c2.name = 'Правоведение, 2-й курс'
 pravo_c2.shortname = 'pravo_c2'
 
-pravo_c3.url = 'https://law.bsu.by/pub/2/Raspisanie_3_pravo_osen.xls'
+pravo_c3.url = 'https://law.bsu.by/pub/2/Raspisanie_3_pravo_vesna.xls'
 pravo_c3.name = 'Правоведение, 3-й курс'
 pravo_c3.shortname = 'pravo_c3'
 
@@ -53,15 +53,15 @@ pravo_c4.url = 'https://law.bsu.by/pub/2/Raspisanie_4_pravo_osen.xls'
 pravo_c4.name = 'Правоведение, 4-й курс'
 pravo_c4.shortname = 'pravo_c4'
 
-ek_polit_c1.url = 'https://law.bsu.by/pub/2/Raspisanie_1_ek_polit_osen.xls'
+ek_polit_c1.url = 'https://law.bsu.by/pub/2/Raspisanie_1_ek_polit.xls'
 ek_polit_c1.name = 'Экономическое право и политология, 1-й курс'
 ek_polit_c1.shortname = 'ek_polit_c1'
 
-ek_polit_c2.url = 'https://law.bsu.by/pub/2/Raspisanie_2_ek_polit_osen.xls'
+ek_polit_c2.url = 'https://law.bsu.by/pub/2/Raspisanie_2_ek_polit_vesna.xls'
 ek_polit_c2.name = 'Экономическое право и политология, 2-й курс'
 ek_polit_c2.shortname = 'ek_polit_c2'
 
-ek_polit_c3.url = 'https://law.bsu.by/pub/2/Raspisanie_3_ek_polit_osen.xls'
+ek_polit_c3.url = 'https://law.bsu.by/pub/2/Raspisanie_3_ek_polit_vesna.xls'
 ek_polit_c3.name = 'Экономическое право и политология, 3-й курс'
 ek_polit_c3.shortname = 'ek_polit_c3'
 
@@ -69,7 +69,7 @@ ek_polit_c4.url = 'https://law.bsu.by/pub/2/Raspisanie_4_ek_polit_osen.xls'
 ek_polit_c4.name = 'Экономическое право и политология, 4-й курс'
 ek_polit_c4.shortname = 'ek_polit_c4'
 
-mag_c1.url = 'https://law.bsu.by/pub/2/Raspisanie_mag_1_kurs_1s.xlsx'
+mag_c1.url = 'https://law.bsu.by/pub/2/Raspisanie_mag_1_kurs_2s.xlsx'
 mag_c1.name = 'Магистратура, 1-й курс'
 mag_c1.shortname = 'mag_c1'
 
