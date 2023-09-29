@@ -15,9 +15,9 @@ statisticsdb_path = db_dir + 'statistics.db'
 
 
 # Intervals for update checks and notifications (s).
-check_updates_interval = 120
+check_updates_interval = 300
 send_message_interval = 0.05
-site_requests_interval = 0.5
+site_requests_interval = 2
 max_request_delay = 5
 
 # Class for storing timetable's options.
